@@ -1,0 +1,1 @@
+A snapshot doesn't exist at /home/runner/work/html-trend-report-action/html-trend-report-action/tests/chart.spec.ts-snapshots/chart-1-chromium-linux.png, writing actual.

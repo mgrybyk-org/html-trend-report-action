@@ -1,0 +1,164 @@
+{
+  "data": [
+    {
+      "name": "_AVERAGE_",
+      "labels": [
+        "accessibility"
+      ],
+      "lines": 1,
+      "records": [
+        {
+          "meta": {
+            "sha": "5430c64912198998040e0e5f967aea0f1a578370"
+          },
+          "data": [
+            {
+              "x": 1693514495520,
+              "y": 100
+            }
+          ]
+        },
+        {
+          "meta": {
+            "sha": "fc9b9595c0865fc6aaabd8489c698e0a7c39e586"
+          },
+          "data": [
+            {
+              "x": 1693514811822,
+              "y": 100
+            }
+          ]
+        },
+        {
+          "meta": {
+            "sha": "2198b478f122cd72816ddd6ef8a9d886ff064bd4"
+          },
+          "data": [
+            {
+              "x": 1693514908500,
+              "y": 100
+            }
+          ]
+        },
+        {
+          "meta": {
+            "sha": "a9cc17b85d7a0a966e5528b27896ad96c3d6e3e6"
+          },
+          "data": [
+            {
+              "x": 1693515216741,
+              "y": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chart",
+      "labels": [
+        "accessibility"
+      ],
+      "lines": 1,
+      "records": [
+        {
+          "meta": {
+            "sha": "5430c64912198998040e0e5f967aea0f1a578370"
+          },
+          "data": [
+            {
+              "x": 1693514495520,
+              "y": 100
+            }
+          ]
+        },
+        {
+          "meta": {
+            "sha": "fc9b9595c0865fc6aaabd8489c698e0a7c39e586"
+          },
+          "data": [
+            {
+              "x": 1693514811822,
+              "y": 100
+            }
+          ]
+        },
+        {
+          "meta": {
+            "sha": "2198b478f122cd72816ddd6ef8a9d886ff064bd4"
+          },
+          "data": [
+            {
+              "x": 1693514908500,
+              "y": 100
+            }
+          ]
+        },
+        {
+          "meta": {
+            "sha": "a9cc17b85d7a0a966e5528b27896ad96c3d6e3e6"
+          },
+          "data": [
+            {
+              "x": 1693515216741,
+              "y": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Folder Listing",
+      "labels": [
+        "accessibility"
+      ],
+      "lines": 1,
+      "records": [
+        {
+          "meta": {
+            "sha": "5430c64912198998040e0e5f967aea0f1a578370"
+          },
+          "data": [
+            {
+              "x": 1693514495520,
+              "y": 100
+            }
+          ]
+        },
+        {
+          "meta": {
+            "sha": "fc9b9595c0865fc6aaabd8489c698e0a7c39e586"
+          },
+          "data": [
+            {
+              "x": 1693514811822,
+              "y": 100
+            }
+          ]
+        },
+        {
+          "meta": {
+            "sha": "2198b478f122cd72816ddd6ef8a9d886ff064bd4"
+          },
+          "data": [
+            {
+              "x": 1693514908500,
+              "y": 100
+            }
+          ]
+        },
+        {
+          "meta": {
+            "sha": "a9cc17b85d7a0a966e5528b27896ad96c3d6e3e6"
+          },
+          "data": [
+            {
+              "x": 1693515216741,
+              "y": 100
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "title": "Lighthouse Trend Report"
+}
