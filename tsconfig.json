@@ -4,7 +4,7 @@
     "module": "ESNext",
     "skipLibCheck": true,
     /* Bundler mode */
-    "moduleResolution": "Bundler",
+    "moduleResolution": "Node16",
     "noEmit": true,
     /* Linting */
     "noImplicitAny": true,

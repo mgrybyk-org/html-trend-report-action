@@ -9842,16 +9842,16 @@ __nccwpck_require__.r(__webpack_exports__);
 
 try {
     // `who-to-greet` input defined in action metadata file
-    const nameToGreet = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput("who-to-greet");
+    const nameToGreet = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("who-to-greet");
     console.log(`Hello ${nameToGreet}!`);
     const time = new Date().toTimeString();
-    _actions_core__WEBPACK_IMPORTED_MODULE_0___default().setOutput("time", time);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("time", time);
     // Get the JSON webhook payload for the event that triggered the workflow
-    const payload = JSON.stringify((_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context.payload), undefined, 2);
+    const payload = JSON.stringify(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.payload, undefined, 2);
     console.log(`The event payload: ${payload}`);
 }
 catch (error) {
-    _actions_core__WEBPACK_IMPORTED_MODULE_0___default().setFailed(error.message);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
 }
 
 })();
