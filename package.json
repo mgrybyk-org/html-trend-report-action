@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "build": "ncc build index.ts --target es2021 --license licenses.txt"
+    "build": "ncc build index.ts --target es2021 --license licenses.txt",
+    "compile": "tsc",
+    "lint": "eslint --ext .ts --ignore-path .gitignore .",
+    "precommit": "run-p lint compile"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +18,16 @@
     "@actions/github": "^5.1.1"
   },
   "devDependencies": {
+    "@types/node": "^16.18.39",
+    "@typescript-eslint/eslint-plugin": "^6.1.0",
+    "@typescript-eslint/parser": "^6.1.0",
     "@vercel/ncc": "^0.36.1",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^8.0.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.0.0",
     "typescript": "^5.1.6"
   }
 }
