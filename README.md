@@ -1,23 +1,21 @@
-# Hello world javascript action
+# html-trend-report-action
 
-This action prints "Hello World" or "Hello" + the name of a person to greet to the log.
+Publish html trend reports per branch.
+
+Implementation of Jenkins [Plot](https://plugins.jenkins.io/plot/) and [HTML Publisher](https://plugins.jenkins.io/htmlpublisher/).
 
 ## Inputs
 
-### `who-to-greet`
-
-**Required** The name of the person to greet. Default `"World"`.
+TODO
 
 ## Outputs
 
-### `time`
-
-The time we greeted you.
+TODO
 
 ## Example usage
 
-```yaml
-uses: actions/hello-world-javascript-action@v1
-with:
-  who-to-greet: 'Mona the Octocat'
-```
+TODO
+
+## GitHub Pages structure
+
+/html-trend-report-action/branch/report_id/build
