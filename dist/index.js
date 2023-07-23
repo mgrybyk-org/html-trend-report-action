@@ -10090,8 +10090,8 @@ try {
     delete toLog.payload;
     console.log('toLog', toLog);
     // action
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2___default().mkdirP(reportBaseDir);
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2___default().cp(sourceReportDir, reportDir, { recursive: true });
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
 }
 catch (error) {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);

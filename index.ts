@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import io from '@actions/io'
+import * as io from '@actions/io'
 
 const baseDir = 'html-trend-report-action'
 const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
