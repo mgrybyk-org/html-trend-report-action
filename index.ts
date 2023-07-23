@@ -1,9 +1,26 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as io from '@actions/io'
+import * as glob from '@actions/glob'
+import * as fs from 'fs/promises'
 
 const baseDir = 'html-trend-report-action'
 const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
+
+const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
+    const fullPath = `${ghPagesPath}/${relPath}`
+    await io.cp('test/index.html', fullPath)
+    const globber = await glob.create(`${fullPath}/*`)
+    const files = await globber.glob()
+    const data = files.reduce(
+        (prev, cur) => {
+            prev[cur] = `${relPath}/${cur}`
+            return prev
+        },
+        {} as Record<string, string>
+    )
+    await fs.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2))
+}
 
 try {
     // vars
@@ -24,6 +41,11 @@ try {
     // action
     await io.mkdirP(reportBaseDir)
     await io.cp(sourceReportDir, reportDir, { recursive: true })
+
+    // temp
+    await writeFolderListing(ghPagesPath, '.')
+    await writeFolderListing(ghPagesPath, baseDir)
+    await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
 } catch (error) {
     core.setFailed(error.message)
 }
