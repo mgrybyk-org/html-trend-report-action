@@ -1,13 +1,21 @@
-name: "Hello World"
-description: "Greet someone and record the time"
+name: 'HTML Reports with history'
+description: 'Publish HTML reports with history per branch'
+author: 'mgrybyk'
+branding:
+    icon: 'layout'
+    color: 'green'
 inputs:
-  who-to-greet: # id of input
-    description: "Who to greet"
-    required: true
-    default: "World"
-outputs:
-  time: # id of output
-    description: "The time we greeted you"
+    report_id:
+        description: 'Unique report id'
+        required: true
+        default: 'html-report'
+    gh_pages:
+        description: 'Folder with gh-pages branch'
+        required: true
+        default: 'gh-pages'
+    report_dir:
+        description: 'Folder with generated html report'
+        required: true
 runs:
-  using: "node16"
-  main: "dist/index.js"
+    using: 'node16'
+    main: 'dist/index.js'

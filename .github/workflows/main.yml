@@ -1,20 +1,43 @@
 on: [push]
 
 jobs:
-    hello_world_job:
-        runs-on: ubuntu-latest
-        name: A job to say hello
-        steps:
-            # To use this repository's private action,
-            # you must check out the repository
-            - name: Checkout
-              uses: actions/checkout@v3
-            - name: Hello world action step
-              id: hello
-              uses: ./ # Uses an action in the root directory
-              # uses: octocat/hello-world-javascript-action@v1.1
-              with:
-                  who-to-greet: 'Mona the Octocat'
-            # Use the output from the `hello` step
-            - name: Get the output time
-              run: echo "The time was ${{ steps.hello.outputs.time }}"
+  hello_world_job:
+    runs-on: ubuntu-latest
+    name: publish report
+
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+      contents: write
+
+    steps:
+      # To use this repository's private action,
+      # you must check out the repository
+      - uses: actions/checkout@v3
+
+      - run: |
+          reportName=html-report-1
+          cp -r test $reportName
+          outFile=$reportName/data.json
+          echo { > $outFile
+          echo "  \"github.run_id\": \"${{ github.run_id }}\"" >> $outFile
+          echo } >> $outFile
+
+      - name: Get Allure history
+        uses: actions/checkout@v3
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages # branch name
+          path: gh-pages-dir # checkout path
+
+      - name: Hello world action step
+        uses: ./ # Uses an action in the root directory
+        with:
+          report_id: 'html-report-1'
+          gh_pages: 'gh-pages-dir'
+          report_dir: 'html-report-1'
+
+      # Use the output from the `hello` step
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          repository: gh-pages-dir # path to checked out gh-pages branch

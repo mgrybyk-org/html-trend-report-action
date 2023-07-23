@@ -7,24 +7,23 @@ const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
 
 try {
     // vars
+    const sourceReportDir = core.getInput('report_dir')
+    const ghPagesPath = core.getInput('gh_pages')
     const reportId = core.getInput('report_id')
     const branchName = getBranchName(github.context.ref)
-    const reportBaseDir = `${baseDir}/${branchName}/${reportId}`
+    const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`
     const reportDir = `${reportBaseDir}/${github.context.runNumber}`
 
     // log
-    console.table({ reportId, branchName, reportBaseDir, reportDir })
+    console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir })
     // context
     const toLog = { ...github.context } as Record<string, unknown>
     delete toLog.payload
     console.log('toLog', toLog)
 
     // action
-    await io.mkdirP(`${baseDir}/${branchName}/${reportId}/${github.context.runNumber}`)
-
-    // leftovers
-    const time = new Date().toTimeString()
-    core.setOutput('time', time)
+    await io.mkdirP(reportBaseDir)
+    await io.cp(sourceReportDir, reportDir, { recursive: true })
 } catch (error) {
     core.setFailed(error.message)
 }
