@@ -22,7 +22,7 @@
 
         data.forEach((v) => {
           const cell = document.createElement(cellType)
-          cell.appendChild(document.createTextNode(v))
+          cell.appendChild(v)
           row.appendChild(cell)
         })
 
@@ -40,6 +40,11 @@
           }
 
           Object.entries(json).forEach((record) => {
+            record[0] = document.createTextNode(record[0])
+            const link = document.createElement('a')
+            link.appendChild(document.createTextNode(record[1]))
+            link.href = record[1]
+            record[1] = link
             tableBody.appendChild(createTr(record))
           })
         })

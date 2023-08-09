@@ -8,13 +8,14 @@ const baseDir = 'html-trend-report-action'
 const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
 
 const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
+    console.log('cwd', process.cwd())
     const fullPath = relPath === '.' ? ghPagesPath : `${ghPagesPath}/${relPath}`
     await io.cp('test/index.html', fullPath)
     const globber = await glob.create(`${fullPath}/*`)
     const files = await globber.glob()
     const data = files.reduce(
         (prev, cur) => {
-            prev[cur] = `${relPath}/${cur}`
+            prev[cur] = cur.replace(process.cwd(), '').replace(relPath, '')
             return prev
         },
         {} as Record<string, string>
@@ -47,6 +48,7 @@ try {
     await writeFolderListing(ghPagesPath, '.')
     await writeFolderListing(ghPagesPath, baseDir)
     await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
+    await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}/${reportId}`)
 } catch (error) {
     core.setFailed(error.message)
 }

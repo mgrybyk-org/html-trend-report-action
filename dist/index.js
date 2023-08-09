@@ -12515,12 +12515,13 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 const baseDir = 'html-trend-report-action';
 const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
 const writeFolderListing = async (ghPagesPath, relPath) => {
+    console.log('cwd', process.cwd());
     const fullPath = relPath === '.' ? ghPagesPath : `${ghPagesPath}/${relPath}`;
     await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/index.html', fullPath);
     const globber = await _actions_glob__WEBPACK_IMPORTED_MODULE_3__.create(`${fullPath}/*`);
     const files = await globber.glob();
     const data = files.reduce((prev, cur) => {
-        prev[cur] = `${relPath}/${cur}`;
+        prev[cur] = cur.replace(process.cwd(), '').replace(relPath, '');
         return prev;
     }, {});
     await fs_promises__WEBPACK_IMPORTED_MODULE_4__.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
@@ -12547,6 +12548,7 @@ try {
     await writeFolderListing(ghPagesPath, '.');
     await writeFolderListing(ghPagesPath, baseDir);
     await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`);
+    await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}/${reportId}`);
 }
 catch (error) {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
