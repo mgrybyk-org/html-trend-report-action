@@ -45,6 +45,8 @@
             const link = document.createElement('a')
             link.appendChild(document.createTextNode(record))
             link.href = record
+            const li = document.createElement('li')
+            li.appendChild(link)
             linksList.appendChild(link)
           })
           delete json.links
