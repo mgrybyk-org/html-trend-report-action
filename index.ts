@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as io from '@actions/io'
-import { glob } from 'glob'
 import * as fs from 'fs/promises'
 
 const baseDir = 'html-trend-report-action'
@@ -11,16 +10,11 @@ const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
     console.log('cwd', process.cwd())
     const fullPath = relPath === '.' ? ghPagesPath : `${ghPagesPath}/${relPath}`
     await io.cp('test/index.html', fullPath)
-    let files: string[] = []
-    try {
-        files = await glob('**/*.html', { absolute: false, cwd: fullPath, maxDepth: 2 })
-    } catch (err) {
-        console.log(err)
-    }
-    if (files.length === 0) {
-        files = await glob('**/*.html', { absolute: false, cwd: `${process.cwd()}/${fullPath}`, maxDepth: 2 })
-    }
-    // await glob('**/*.html', { absolute: false, cwd: fullPath, maxDepth: 2 })
+
+    const files = (await fs.readdir(fullPath, { withFileTypes: true }))
+        .filter((dirent) => dirent.isDirectory())
+        .map((dirent) => dirent.name)
+
     const data = files.reduce(
         (prev, cur) => {
             prev[cur] = cur // cur.replace(process.cwd(), '').replace(relPath, '')
