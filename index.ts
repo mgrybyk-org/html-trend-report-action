@@ -11,7 +11,16 @@ const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
     console.log('cwd', process.cwd())
     const fullPath = relPath === '.' ? ghPagesPath : `${ghPagesPath}/${relPath}`
     await io.cp('test/index.html', fullPath)
-    const files = await glob('**/*.html', { absolute: false, root: fullPath, maxDepth: 1 })
+    let files: string[] = []
+    try {
+        files = await glob('**/*.html', { absolute: false, cwd: fullPath, maxDepth: 2 })
+    } catch (err) {
+        console.log(err)
+    }
+    if (files.length === 0) {
+        files = await glob('**/*.html', { absolute: false, cwd: `${process.cwd()}/${fullPath}`, maxDepth: 2 })
+    }
+    // await glob('**/*.html', { absolute: false, cwd: fullPath, maxDepth: 2 })
     const data = files.reduce(
         (prev, cur) => {
             prev[cur] = cur // cur.replace(process.cwd(), '').replace(relPath, '')

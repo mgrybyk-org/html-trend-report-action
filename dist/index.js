@@ -10363,7 +10363,17 @@ const writeFolderListing = async (ghPagesPath, relPath) => {
     console.log('cwd', process.cwd());
     const fullPath = relPath === '.' ? ghPagesPath : `${ghPagesPath}/${relPath}`;
     await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/index.html', fullPath);
-    const files = await (0,glob__WEBPACK_IMPORTED_MODULE_3__/* .glob */ .zA)('**/*.html', { absolute: false, root: fullPath, maxDepth: 1 });
+    let files = [];
+    try {
+        files = await (0,glob__WEBPACK_IMPORTED_MODULE_3__/* .glob */ .zA)('**/*.html', { absolute: false, cwd: fullPath, maxDepth: 2 });
+    }
+    catch (err) {
+        console.log(err);
+    }
+    if (files.length === 0) {
+        files = await (0,glob__WEBPACK_IMPORTED_MODULE_3__/* .glob */ .zA)('**/*.html', { absolute: false, cwd: `${process.cwd()}/${fullPath}`, maxDepth: 2 });
+    }
+    // await glob('**/*.html', { absolute: false, cwd: fullPath, maxDepth: 2 })
     const data = files.reduce((prev, cur) => {
         prev[cur] = cur; // cur.replace(process.cwd(), '').replace(relPath, '')
         return prev;
