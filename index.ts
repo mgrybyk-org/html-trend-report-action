@@ -1,8 +1,8 @@
-import core from '@actions/core'
-import github from '@actions/github'
-import io from '@actions/io'
-import glob from '@actions/glob'
-import fs from 'fs/promises'
+import * as core from '@actions/core'
+import * as github from '@actions/github'
+import * as io from '@actions/io'
+import * as glob from '@actions/glob'
+import * as fs from 'fs/promises'
 import allure from 'allure-commandline'
 
 const baseDir = 'html-trend-report-action'

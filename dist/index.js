@@ -12544,28 +12544,28 @@ const spawnAllure = async (allureResultsDir, allureReportDir) => {
 };
 const writeFolderListing = async (ghPagesPath, relPath) => {
     const fullPath = `${ghPagesPath}/${relPath}`;
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2___default().cp('test/index.html', fullPath);
-    const globber = await _actions_glob__WEBPACK_IMPORTED_MODULE_3___default().create(`${fullPath}/*`);
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/index.html', fullPath);
+    const globber = await _actions_glob__WEBPACK_IMPORTED_MODULE_3__.create(`${fullPath}/*`);
     const files = await globber.glob();
     const data = files.reduce((prev, cur) => {
         prev[cur] = `${relPath}/${cur}`;
         return prev;
     }, {});
-    await fs_promises__WEBPACK_IMPORTED_MODULE_4___default().writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
+    await fs_promises__WEBPACK_IMPORTED_MODULE_4__.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
 };
 try {
     // vars
-    const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput('report_dir');
-    const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput('gh_pages');
-    const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput('report_id');
-    const isAllure = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput('isAllure') === 'true';
-    const branchName = getBranchName((_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context.ref));
+    const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_dir');
+    const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('gh_pages');
+    const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_id');
+    const isAllure = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('isAllure') === 'true';
+    const branchName = getBranchName(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`;
-    const reportDir = `${reportBaseDir}/${(_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context.runNumber)}`;
+    const reportDir = `${reportBaseDir}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runNumber}`;
     // log
     console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, isAllure });
     // context
-    const toLog = { ...(_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context) };
+    const toLog = { ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context };
     delete toLog.payload;
     console.log('toLog', toLog);
     // action
@@ -12573,8 +12573,8 @@ try {
         await spawnAllure(sourceReportDir, reportDir);
     }
     else {
-        await _actions_io__WEBPACK_IMPORTED_MODULE_2___default().mkdirP(reportBaseDir);
-        await _actions_io__WEBPACK_IMPORTED_MODULE_2___default().cp(sourceReportDir, reportDir, { recursive: true });
+        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
+        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
     }
     // temp
     await writeFolderListing(ghPagesPath, '.');
@@ -12582,7 +12582,7 @@ try {
     await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`);
 }
 catch (error) {
-    _actions_core__WEBPACK_IMPORTED_MODULE_0___default().setFailed(error.message);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
 }
 
 __webpack_async_result__();

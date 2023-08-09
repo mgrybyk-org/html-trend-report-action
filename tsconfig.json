@@ -5,8 +5,6 @@
     "target": "ES2021",
     "skipLibCheck": true,
     "noEmit": true,
-    /* Bundler mode */
-    "esModuleInterop": true,
     /* Linting */
     "noImplicitAny": true,
     "strictPropertyInitialization": true,
