@@ -10081,7 +10081,7 @@ const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
 const writeFolderListing = async (ghPagesPath, relPath) => {
     const isRoot = relPath === '.';
     const fullPath = isRoot ? ghPagesPath : `${ghPagesPath}/${relPath}`;
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/index.html', fullPath);
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/html/index.html', fullPath);
     const links = [];
     if (!isRoot) {
         links.push('..');
@@ -10103,12 +10103,12 @@ try {
     const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_dir');
     const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('gh_pages');
     const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_id');
-    const isAllure = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('isAllure') === 'true';
+    // const isAllure = core.getInput('isAllure') === 'true'
     const branchName = getBranchName(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`;
     const reportDir = `${reportBaseDir}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId}`; // github.context.runNumber
     // log
-    console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, isAllure, gitref: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref });
+    console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, gitref: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref });
     // context
     const toLog = { ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context };
     delete toLog.payload;
