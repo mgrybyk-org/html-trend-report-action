@@ -30,7 +30,7 @@ try {
     const isAllure = core.getInput('isAllure') === 'true'
     const branchName = getBranchName(github.context.ref)
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`
-    const reportDir = `${reportBaseDir}/${github.context.runNumber}`
+    const reportDir = `${reportBaseDir}/${github.context.runId}` // github.context.runNumber
 
     // log
     console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, isAllure, gitref: github.context.ref })

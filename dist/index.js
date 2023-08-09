@@ -12533,7 +12533,7 @@ try {
     const isAllure = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('isAllure') === 'true';
     const branchName = getBranchName(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`;
-    const reportDir = `${reportBaseDir}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runNumber}`;
+    const reportDir = `${reportBaseDir}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId}`; // github.context.runNumber
     // log
     console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, isAllure, gitref: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref });
     // context
