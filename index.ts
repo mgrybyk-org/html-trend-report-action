@@ -8,7 +8,7 @@ const baseDir = 'html-trend-report-action'
 const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
 
 const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
-    const fullPath = `${ghPagesPath}/${relPath}`
+    const fullPath = relPath === '.' ? ghPagesPath : `${ghPagesPath}/${relPath}`
     await io.cp('test/index.html', fullPath)
     const globber = await glob.create(`${fullPath}/*`)
     const files = await globber.glob()

@@ -12515,7 +12515,7 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 const baseDir = 'html-trend-report-action';
 const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
 const writeFolderListing = async (ghPagesPath, relPath) => {
-    const fullPath = `${ghPagesPath}/${relPath}`;
+    const fullPath = relPath === '.' ? ghPagesPath : `${ghPagesPath}/${relPath}`;
     await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/index.html', fullPath);
     const globber = await _actions_glob__WEBPACK_IMPORTED_MODULE_3__.create(`${fullPath}/*`);
     const files = await globber.glob();
