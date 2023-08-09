@@ -6,7 +6,7 @@ on:
         branches: ['main']
 
 jobs:
-    build:
+    code_quality:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout

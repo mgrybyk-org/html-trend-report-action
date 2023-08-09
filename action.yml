@@ -16,6 +16,10 @@ inputs:
     report_dir:
         description: 'Folder with generated html report'
         required: true
+    isAllure:
+        description: 'Generate Allure report? Requires Java https://github.com/actions/setup-java'
+        required: false
+        default: 'false'
 runs:
     using: 'node16'
     main: 'dist/index.js'

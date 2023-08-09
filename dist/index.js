@@ -6013,6 +6013,23 @@ exports.request = request;
 
 /***/ }),
 
+/***/ 9858:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+var path = __nccwpck_require__(1017);
+var isWindows = path.sep === '\\';
+var allureCommand = 'allure' + (isWindows ? '.bat' : '');
+
+module.exports = function(args) {
+    return (__nccwpck_require__(2081).spawn)(__nccwpck_require__.ab + "allure", args, {
+        env: process.env,
+        stdio: 'inherit'
+    });
+}
+
+
+/***/ }),
+
 /***/ 9417:
 /***/ ((module) => {
 
@@ -12507,6 +12524,9 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony import */ var _actions_glob__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(_actions_glob__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var fs_promises__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(3292);
 /* harmony import */ var fs_promises__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__nccwpck_require__.n(fs_promises__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var allure_commandline__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(9858);
+/* harmony import */ var allure_commandline__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__nccwpck_require__.n(allure_commandline__WEBPACK_IMPORTED_MODULE_5__);
+
 
 
 
@@ -12514,41 +12534,55 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 
 const baseDir = 'html-trend-report-action';
 const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
+const spawnAllure = async (allureResultsDir, allureReportDir) => {
+    const allureChildProcess = allure_commandline__WEBPACK_IMPORTED_MODULE_5___default()(['generate', '--clean', allureResultsDir, '-o', allureReportDir]);
+    const generation = new Promise((resolve, reject) => {
+        allureChildProcess.once('error', reject);
+        allureChildProcess.once('exit', (code) => (code === 0 ? resolve() : reject(code)));
+    });
+    return generation;
+};
 const writeFolderListing = async (ghPagesPath, relPath) => {
     const fullPath = `${ghPagesPath}/${relPath}`;
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/index.html', fullPath);
-    const globber = await _actions_glob__WEBPACK_IMPORTED_MODULE_3__.create(`${fullPath}/*`);
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2___default().cp('test/index.html', fullPath);
+    const globber = await _actions_glob__WEBPACK_IMPORTED_MODULE_3___default().create(`${fullPath}/*`);
     const files = await globber.glob();
     const data = files.reduce((prev, cur) => {
         prev[cur] = `${relPath}/${cur}`;
         return prev;
     }, {});
-    await fs_promises__WEBPACK_IMPORTED_MODULE_4__.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
+    await fs_promises__WEBPACK_IMPORTED_MODULE_4___default().writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
 };
 try {
     // vars
-    const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_dir');
-    const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('gh_pages');
-    const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_id');
-    const branchName = getBranchName(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
+    const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput('report_dir');
+    const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput('gh_pages');
+    const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput('report_id');
+    const isAllure = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput('isAllure') === 'true';
+    const branchName = getBranchName((_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context.ref));
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`;
-    const reportDir = `${reportBaseDir}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runNumber}`;
+    const reportDir = `${reportBaseDir}/${(_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context.runNumber)}`;
     // log
-    console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir });
+    console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, isAllure });
     // context
-    const toLog = { ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context };
+    const toLog = { ...(_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context) };
     delete toLog.payload;
     console.log('toLog', toLog);
     // action
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
+    if (isAllure) {
+        await spawnAllure(sourceReportDir, reportDir);
+    }
+    else {
+        await _actions_io__WEBPACK_IMPORTED_MODULE_2___default().mkdirP(reportBaseDir);
+        await _actions_io__WEBPACK_IMPORTED_MODULE_2___default().cp(sourceReportDir, reportDir, { recursive: true });
+    }
     // temp
     await writeFolderListing(ghPagesPath, '.');
     await writeFolderListing(ghPagesPath, baseDir);
     await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`);
 }
 catch (error) {
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0___default().setFailed(error.message);
 }
 
 __webpack_async_result__();
@@ -12568,6 +12602,13 @@ module.exports = eval("require")("encoding");
 /***/ ((module) => {
 
 module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("assert");
+
+/***/ }),
+
+/***/ 2081:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("child_process");
 
 /***/ }),
 

@@ -1,9 +1,9 @@
 on: [push]
 
 jobs:
-  hello_world_job:
+  html_report_test:
     runs-on: ubuntu-latest
-    name: publish report
+    name: publish html report
 
     permissions:
       # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
@@ -22,7 +22,7 @@ jobs:
           echo "  \"github.run_id\": \"${{ github.run_id }}\"" >> $outFile
           echo } >> $outFile
 
-      - name: Get Allure history
+      - name: Checkout gh-pages
         uses: actions/checkout@v3
         if: always()
         continue-on-error: true
@@ -41,3 +41,39 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           repository: gh-pages-dir # path to checked out gh-pages branch
+
+  allure_report_test:
+    runs-on: ubuntu-latest
+    name: publish allure report
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3 # Java is required to run Allure CLI
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v3
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages # branch name
+          path: gh-pages-dir # checkout path
+
+      - name: Hello world action step
+        uses: ./ # Uses an action in the root directory
+        with:
+          report_id: 'html-report-2'
+          gh_pages: 'gh-pages-dir'
+          report_dir: 'html-report-2'
+          isAllure: 'true'
+
+      # Use the output from the `hello` step
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          repository: gh-pages-dir # path to checked out gh-pages branch
+
