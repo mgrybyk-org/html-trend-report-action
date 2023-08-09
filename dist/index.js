@@ -10079,16 +10079,23 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 const baseDir = 'html-trend-report-action';
 const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
 const writeFolderListing = async (ghPagesPath, relPath) => {
-    console.log('cwd', process.cwd());
-    const fullPath = relPath === '.' ? ghPagesPath : `${ghPagesPath}/${relPath}`;
+    const isRoot = relPath === '.';
+    const fullPath = isRoot ? ghPagesPath : `${ghPagesPath}/${relPath}`;
     await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/index.html', fullPath);
-    const files = (await fs_promises__WEBPACK_IMPORTED_MODULE_3__.readdir(fullPath, { withFileTypes: true }))
-        .filter((dirent) => dirent.isDirectory())
-        .map((dirent) => dirent.name);
-    const data = files.reduce((prev, cur) => {
-        prev[cur] = cur; // cur.replace(process.cwd(), '').replace(relPath, '')
-        return prev;
-    }, {});
+    const links = [];
+    if (!isRoot) {
+        links.push('..');
+    }
+    const listdir = (await fs_promises__WEBPACK_IMPORTED_MODULE_3__.readdir(fullPath, { withFileTypes: true }))
+        .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
+        .map((d) => d.name);
+    links.push(...listdir);
+    const data = {
+        links,
+    };
+    if (!isRoot) {
+        data.date = new Date().toISOString();
+    }
     await fs_promises__WEBPACK_IMPORTED_MODULE_3__.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
 };
 try {

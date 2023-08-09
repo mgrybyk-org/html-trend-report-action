@@ -7,21 +7,26 @@ const baseDir = 'html-trend-report-action'
 const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
 
 const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
-    console.log('cwd', process.cwd())
-    const fullPath = relPath === '.' ? ghPagesPath : `${ghPagesPath}/${relPath}`
+    const isRoot = relPath === '.'
+    const fullPath = isRoot ? ghPagesPath : `${ghPagesPath}/${relPath}`
+
     await io.cp('test/index.html', fullPath)
 
-    const files = (await fs.readdir(fullPath, { withFileTypes: true }))
-        .filter((dirent) => dirent.isDirectory())
-        .map((dirent) => dirent.name)
+    const links: string[] = []
+    if (!isRoot) {
+        links.push('..')
+    }
+    const listdir = (await fs.readdir(fullPath, { withFileTypes: true }))
+        .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
+        .map((d) => d.name)
+    links.push(...listdir)
 
-    const data = files.reduce(
-        (prev, cur) => {
-            prev[cur] = cur // cur.replace(process.cwd(), '').replace(relPath, '')
-            return prev
-        },
-        {} as Record<string, string>
-    )
+    const data: Record<string, string | string[]> = {
+        links,
+    }
+    if (!isRoot) {
+        data.date = new Date().toISOString()
+    }
     await fs.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2))
 }
 

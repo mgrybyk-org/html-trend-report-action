@@ -14,6 +14,7 @@
         <tbody></tbody>
         <tfoot></tfoot>
       </table>
+      <ul id="links"></ul>
     </div>
 
     <script>
@@ -29,6 +30,7 @@
         return row
       }
 
+      const linksList = document.getElementById('links')
       const table = document.getElementById('list-table')
       const tableBody = table.getElementsByTagName('tbody')[0]
 
@@ -38,6 +40,14 @@
           if (!json) {
             return
           }
+
+          json.links.forEach((record) => {
+            const link = document.createElement('a')
+            link.appendChild(document.createTextNode(record))
+            link.href = record
+            linksList.appendChild(link)
+          })
+          delete json.links
 
           Object.entries(json).forEach((record) => {
             record[0] = document.createTextNode(record[0])
