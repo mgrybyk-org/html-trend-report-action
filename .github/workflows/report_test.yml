@@ -53,10 +53,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3 # Java is required to run Allure CLI
-        with:
-          distribution: 'temurin'
-          java-version: '17'
 
       - name: Checkout gh-pages
         uses: actions/checkout@v3
@@ -66,13 +62,18 @@ jobs:
           ref: gh-pages # branch name
           path: gh-pages-dir # checkout path
 
-      - name: Hello world action step
-        uses: ./ # Uses an action in the root directory
+      - shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+      - name: Allure Report action from marketplace
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        id: allure-report
         with:
-          report_id: 'html-report-2'
-          gh_pages: 'gh-pages-dir'
-          report_dir: 'html-report-2'
-          isAllure: 'true'
+          allure_results: test/allure-results
+          gh_pages: gh-pages-dir
+          allure_report: allure/${{ env.BRANCH_NAME }}/${{ github.run_number }}/allure-report
+          allure_history: allure/${{ env.BRANCH_NAME }}/${{ github.run_number }}/allure-history
 
       # Use the output from the `hello` step
       - uses: stefanzweifel/git-auto-commit-action@v4
