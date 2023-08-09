@@ -2,24 +2,20 @@ name: 'HTML Reports with history'
 description: 'Publish HTML reports with history per branch'
 author: 'mgrybyk'
 branding:
-    icon: 'layout'
-    color: 'green'
+  icon: 'layout'
+  color: 'green'
 inputs:
-    report_id:
-        description: 'Unique report id'
-        required: true
-        default: 'html-report'
-    gh_pages:
-        description: 'Folder with gh-pages branch'
-        required: true
-        default: 'gh-pages'
-    report_dir:
-        description: 'Folder with generated html report'
-        required: true
-    isAllure:
-        description: 'Generate Allure report? Requires Java https://github.com/actions/setup-java'
-        required: false
-        default: 'false'
+  report_id:
+    description: 'Unique report id'
+    required: true
+    default: 'html-report'
+  gh_pages:
+    description: 'Folder with gh-pages branch'
+    required: true
+    default: 'gh-pages'
+  report_dir:
+    description: 'Folder with generated html report'
+    required: true
 runs:
-    using: 'node16'
-    main: 'dist/index.js'
+  using: 'node16'
+  main: 'dist/index.js'

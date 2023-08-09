@@ -18,11 +18,15 @@ jobs:
 
       - run: |
           reportName=html-report-1
-          cp -r test $reportName
+          cp -r test/html $reportName
           outFile=$reportName/data.json
           echo { > $outFile
           echo "  \"github.run_id\": \"${{ github.run_id }}\"" >> $outFile
           echo } >> $outFile
+
+      - run: |
+          reportName=chart-report-2
+          cp -r test/chart $reportName
 
       - name: Checkout gh-pages
         uses: actions/checkout@v3
@@ -32,12 +36,19 @@ jobs:
           ref: gh-pages # branch name
           path: gh-pages-dir # checkout path
 
-      - name: Local Github Action
+      - name: Local HTML Report
         uses: ./ # Uses an action in the root directory
         with:
           report_id: 'html-report-1'
           gh_pages: 'gh-pages-dir'
           report_dir: 'html-report-1'
+
+      - name: Local Chart Report
+        uses: ./ # Uses an action in the root directory
+        with:
+          report_id: 'chart-report-2'
+          gh_pages: 'gh-pages-dir'
+          report_dir: 'chart-report-2'
 
       # Use the output from the `hello` step
       - uses: stefanzweifel/git-auto-commit-action@v4
@@ -83,4 +94,3 @@ jobs:
   #     - uses: stefanzweifel/git-auto-commit-action@v4
   #       with:
   #         repository: gh-pages-dir # path to checked out gh-pages branch
-

@@ -23,7 +23,7 @@
 
         data.forEach((v) => {
           const cell = document.createElement(cellType)
-          cell.appendChild(v)
+          cell.appendChild(document.createTextNode(v))
           row.appendChild(cell)
         })
 
@@ -49,14 +49,13 @@
           })
           delete json.links
 
-          Object.entries(json).forEach((record) => {
-            record[0] = document.createTextNode(record[0])
-            const link = document.createElement('a')
-            link.appendChild(document.createTextNode(record[1]))
-            link.href = record[1]
-            record[1] = link
-            tableBody.appendChild(createTr(record))
-          })
+          if (Object.keys(json).length === 0) {
+            table.remove()
+          } else {
+            Object.entries(json).forEach((record) => {
+              tableBody.appendChild(createTr(record))
+            })
+          }
         })
     </script>
   </body>
