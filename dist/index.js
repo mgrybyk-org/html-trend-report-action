@@ -19387,7 +19387,7 @@ const baseDir = 'html-trend-report-action';
 const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
 const isFileExist = async (filePath) => {
     try {
-        await fs_promises__WEBPACK_IMPORTED_MODULE_3__.stat(filePath);
+        await fs_promises__WEBPACK_IMPORTED_MODULE_3__.access(filePath, fs_promises__WEBPACK_IMPORTED_MODULE_3__.constants.F_OK);
         return true;
     }
     catch {
