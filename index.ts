@@ -75,6 +75,7 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
                         data: [],
                     },
                 }
+                dataJson.push(entry)
             }
             entry.labels = labels
             entry.lines = labels.length

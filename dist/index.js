@@ -19447,6 +19447,7 @@ const csvReport = async (sourceReportDir, reportBaseDir) => {
                     data: [],
                 },
             };
+            dataJson.push(entry);
         }
         entry.labels = labels;
         entry.lines = labels.length;
@@ -19454,9 +19455,7 @@ const csvReport = async (sourceReportDir, reportBaseDir) => {
             .map((s) => parseFloat(s))
             .map((y) => ({ x, y })));
     });
-    console.log('write');
     await fs_promises__WEBPACK_IMPORTED_MODULE_3__.writeFile(dataFile, JSON.stringify(dataJson, null, 2));
-    console.log('done');
 };
 try {
     // vars
