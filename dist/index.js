@@ -19417,9 +19417,7 @@ const writeFolderListing = async (ghPagesPath, relPath) => {
 const csvReport = async (sourceReportDir, reportBaseDir) => {
     const dataFile = `${reportBaseDir}/data.json`;
     let dataJson;
-    console.log('exist');
     if (await isFileExist(dataFile)) {
-        console.log('read');
         dataJson = JSON.parse((await fs_promises__WEBPACK_IMPORTED_MODULE_3__.readFile(dataFile)).toString('utf-8'));
     }
     else {
@@ -19427,7 +19425,6 @@ const csvReport = async (sourceReportDir, reportBaseDir) => {
     }
     const filesContent = [];
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
-        console.log('csv', sourceReportDir);
         const json = await csvtojson__WEBPACK_IMPORTED_MODULE_5___default()().fromFile(sourceReportDir);
         filesContent.push({ name: path__WEBPACK_IMPORTED_MODULE_4__.basename(sourceReportDir, path__WEBPACK_IMPORTED_MODULE_4__.extname(sourceReportDir)), json });
     }
@@ -19459,6 +19456,7 @@ const csvReport = async (sourceReportDir, reportBaseDir) => {
     });
     console.log('write');
     await fs_promises__WEBPACK_IMPORTED_MODULE_3__.writeFile(dataFile, JSON.stringify(dataJson, null, 2));
+    console.log('done');
 };
 try {
     // vars
@@ -19492,7 +19490,7 @@ try {
         await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`);
     }
     else if (reportType === 'csv') {
-        await csvReport(sourceReportDir, reportDir); // TODO index.html built-in
+        await csvReport(sourceReportDir, reportBaseDir); // TODO index.html built-in
         await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('reports/chart/index.html', reportBaseDir, { recursive: true });
     }
     else {

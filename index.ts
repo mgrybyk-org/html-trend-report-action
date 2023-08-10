@@ -45,9 +45,7 @@ const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
 const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
     const dataFile = `${reportBaseDir}/data.json`
     let dataJson: Array<CsvDataJson>
-    console.log('exist')
     if (await isFileExist(dataFile)) {
-        console.log('read')
         dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
     } else {
         dataJson = []
@@ -55,7 +53,6 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
 
     const filesContent: Array<{ name: string; json: Array<Record<string, string>> }> = []
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
-        console.log('csv', sourceReportDir)
         const json = await csvtojson().fromFile(sourceReportDir)
         filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
     } else {
@@ -90,6 +87,7 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
 
     console.log('write')
     await fs.writeFile(dataFile, JSON.stringify(dataJson, null, 2))
+    console.log('done')
 }
 
 try {
@@ -127,7 +125,7 @@ try {
         // folder listing
         await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
     } else if (reportType === 'csv') {
-        await csvReport(sourceReportDir, reportDir) // TODO index.html built-in
+        await csvReport(sourceReportDir, reportBaseDir) // TODO index.html built-in
         await io.cp('reports/chart/index.html', reportBaseDir, { recursive: true })
     } else {
         throw new Error('Unsupported report type: ' + reportType)
