@@ -5,36 +5,107 @@
   </head>
 
   <body>
-    <div>
-      <canvas id="myChart"></canvas>
-    </div>
+    <main id="main"></main>
 
     <!-- https://cdnjs.com/libraries/Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.3/chart.umd.js"></script>
 
     <script>
-      const ctx = document.getElementById('myChart')
+      const chartsRoot = document.getElementById('main')
 
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-          datasets: [
-            {
-              label: '# of Votes',
-              data: [12, 19, 3, 5, 2, 3],
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true,
-            },
-          },
-        },
-      })
+      const CHART_COLORS = {
+        red: 'rgb(255, 99, 132)',
+        orange: 'rgb(255, 159, 64)',
+        yellow: 'rgb(255, 205, 86)',
+        green: 'rgb(75, 192, 192)',
+        blue: 'rgb(54, 162, 235)',
+        purple: 'rgb(153, 102, 255)',
+        grey: 'rgb(201, 203, 207)',
+      }
+
+      const NAMED_COLORS = [
+        CHART_COLORS.red,
+        CHART_COLORS.orange,
+        CHART_COLORS.yellow,
+        CHART_COLORS.green,
+        CHART_COLORS.blue,
+        CHART_COLORS.purple,
+        CHART_COLORS.grey,
+      ]
+
+      fetch(`./data.json?t=${Date.now()}`)
+        .then((response) => response.ok && response.json())
+        .then((json) => {
+          if (!json) {
+            return
+          }
+
+          // todo: remove
+          window.__json = json
+          console.log(json)
+
+          json.forEach((reportConfig) => {
+            const div = document.createElement('div')
+            div.setAttribute('data-testid', reportConfig.name)
+
+            const ctx = document.createElement('canvas')
+            const h2 = document.createElement('h2')
+            h2.appendChild(document.createTextNode(reportConfig.name))
+            const link = document.createElement('a')
+            a.href = `#${reportConfig.name.replaceAll(' ', '_')}`
+            a.appendChild(document.createTextNode('#'))
+            h2.appendChild(a)
+            div.appendChild(h2)
+            div.appendChild(ctx)
+            chartsRoot.appendChild(div)
+
+            const datasets = []
+            for (let idx = 0; idx < reportConfig.lines; idx++) {
+              const data = []
+              datasets.push({
+                radius: 1,
+                borderWidth: 1,
+                borderColor: NAMED_COLORS[idx],
+                label: reportConfig.labes[idx],
+                data,
+              })
+
+              reportConfig.records.data[idx].forEach((d) => data.push(d))
+            }
+
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                datasets,
+              },
+              options: {
+                // Turn off animations and data parsing for performance
+                animation: false,
+                parsing: false,
+
+                interaction: {
+                  mode: 'nearest',
+                  axis: 'x',
+                  intersect: false,
+                },
+                plugins: {
+                  decimation: { enabled: true, algorithm: 'lttb', samples: 60, threshold: 60 },
+                },
+                scales: {
+                  x: {
+                    type: 'time',
+                    ticks: {
+                      source: 'auto',
+                      // Disabled rotation for performance
+                      maxRotation: 0,
+                      autoSkip: true,
+                    },
+                  },
+                },
+              },
+            })
+          })
+        })
     </script>
   </body>
 </html>

@@ -14,8 +14,12 @@ inputs:
     required: true
     default: 'gh-pages'
   report_dir:
-    description: 'Folder with generated html report'
+    description: 'Folder with generated html report or csv files'
     required: true
+  report_type:
+    description: 'html or csv'
+    required: false
+    default: 'html'
 runs:
   using: 'node16'
   main: 'dist/index.js'

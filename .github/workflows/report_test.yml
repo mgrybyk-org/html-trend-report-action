@@ -24,10 +24,6 @@ jobs:
           echo "  \"github.run_id\": \"${{ github.run_id }}\"" >> $outFile
           echo } >> $outFile
 
-      - run: |
-          reportName=chart-report-2
-          cp -r test/chart $reportName
-
       - name: Checkout gh-pages
         uses: actions/checkout@v3
         if: always()
@@ -48,7 +44,8 @@ jobs:
         with:
           report_id: 'chart-report-2'
           gh_pages: 'gh-pages-dir'
-          report_dir: 'chart-report-2'
+          report_dir: 'test/csv/foo.csv'
+          report_type: csv
 
       # Use the output from the `hello` step
       - uses: stefanzweifel/git-auto-commit-action@v4
