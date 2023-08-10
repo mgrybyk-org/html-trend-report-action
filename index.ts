@@ -21,7 +21,7 @@ const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
     const isRoot = relPath === '.'
     const fullPath = isRoot ? ghPagesPath : `${ghPagesPath}/${relPath}`
 
-    await io.cp('test/html/index.html', fullPath)
+    await io.cp('reports/html/index.html', fullPath)
 
     const links: string[] = []
     if (!isRoot) {
@@ -38,13 +38,16 @@ const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
     if (!isRoot) {
         data.date = new Date().toISOString()
     }
+
     await fs.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2))
 }
 
 const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
     const dataFile = `${reportBaseDir}/data.json`
     let dataJson: Array<CsvDataJson>
+    console.log('exist')
     if (await isFileExist(dataFile)) {
+        console.log('read')
         dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
     } else {
         dataJson = []
@@ -52,6 +55,7 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
 
     const filesContent: Array<{ name: string; json: Array<Record<string, string>> }> = []
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
+        console.log('csv', sourceReportDir)
         const json = await csvtojson().fromFile(sourceReportDir)
         filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
     } else {
@@ -84,6 +88,7 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
             )
         })
 
+    console.log('write')
     await fs.writeFile(dataFile, JSON.stringify(dataJson, null, 2))
 }
 
@@ -105,17 +110,6 @@ try {
     delete toLog.payload
     console.log('toLog', toLog)
 
-    // action
-    await io.mkdirP(reportBaseDir)
-    if (reportType === 'html') {
-        await io.cp(sourceReportDir, reportDir, { recursive: true })
-    } else if (reportType === 'csv') {
-        await csvReport(sourceReportDir, reportDir) // TODO index.html built-in
-        await io.cp('test/chart/index.html', reportBaseDir, { recursive: true })
-    } else {
-        throw new Error('Unsupported report type: ' + reportType)
-    }
-
     // TODO index.html built-in
     // folder listing
     // do noot overwrite index.html in the folder root to avoid conflicts
@@ -124,8 +118,20 @@ try {
         await writeFolderListing(ghPagesPath, '.')
     }
     await writeFolderListing(ghPagesPath, baseDir)
-    await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
-    await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}/${reportId}`)
+
+    // action
+    await io.mkdirP(reportBaseDir)
+    if (reportType === 'html') {
+        await io.cp(sourceReportDir, reportDir, { recursive: true })
+
+        // folder listing
+        await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
+    } else if (reportType === 'csv') {
+        await csvReport(sourceReportDir, reportDir) // TODO index.html built-in
+        await io.cp('reports/chart/index.html', reportBaseDir, { recursive: true })
+    } else {
+        throw new Error('Unsupported report type: ' + reportType)
+    }
 } catch (error) {
     core.setFailed(error.message)
 }
