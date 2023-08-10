@@ -85,9 +85,7 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
             )
         })
 
-    console.log('write')
     await fs.writeFile(dataFile, JSON.stringify(dataJson, null, 2))
-    console.log('done')
 }
 
 try {
