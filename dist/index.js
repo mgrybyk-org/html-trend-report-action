@@ -19397,7 +19397,7 @@ const isFileExist = async (filePath) => {
 const writeFolderListing = async (ghPagesPath, relPath) => {
     const isRoot = relPath === '.';
     const fullPath = isRoot ? ghPagesPath : `${ghPagesPath}/${relPath}`;
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/html/index.html', fullPath);
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('reports/html/index.html', fullPath);
     const links = [];
     if (!isRoot) {
         links.push('..');
@@ -19417,7 +19417,9 @@ const writeFolderListing = async (ghPagesPath, relPath) => {
 const csvReport = async (sourceReportDir, reportBaseDir) => {
     const dataFile = `${reportBaseDir}/data.json`;
     let dataJson;
+    console.log('exist');
     if (await isFileExist(dataFile)) {
+        console.log('read');
         dataJson = JSON.parse((await fs_promises__WEBPACK_IMPORTED_MODULE_3__.readFile(dataFile)).toString('utf-8'));
     }
     else {
@@ -19425,6 +19427,7 @@ const csvReport = async (sourceReportDir, reportBaseDir) => {
     }
     const filesContent = [];
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
+        console.log('csv', sourceReportDir);
         const json = await csvtojson__WEBPACK_IMPORTED_MODULE_5___default()().fromFile(sourceReportDir);
         filesContent.push({ name: path__WEBPACK_IMPORTED_MODULE_4__.basename(sourceReportDir, path__WEBPACK_IMPORTED_MODULE_4__.extname(sourceReportDir)), json });
     }
@@ -19454,6 +19457,7 @@ const csvReport = async (sourceReportDir, reportBaseDir) => {
             .map((s) => parseFloat(s))
             .map((y) => ({ x, y })));
     });
+    console.log('write');
     await fs_promises__WEBPACK_IMPORTED_MODULE_3__.writeFile(dataFile, JSON.stringify(dataJson, null, 2));
 };
 try {
@@ -19472,18 +19476,6 @@ try {
     const toLog = { ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context };
     delete toLog.payload;
     console.log('toLog', toLog);
-    // action
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
-    if (reportType === 'html') {
-        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
-    }
-    else if (reportType === 'csv') {
-        await csvReport(sourceReportDir, reportDir); // TODO index.html built-in
-        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('test/chart/index.html', reportBaseDir, { recursive: true });
-    }
-    else {
-        throw new Error('Unsupported report type: ' + reportType);
-    }
     // TODO index.html built-in
     // folder listing
     // do noot overwrite index.html in the folder root to avoid conflicts
@@ -19492,8 +19484,20 @@ try {
         await writeFolderListing(ghPagesPath, '.');
     }
     await writeFolderListing(ghPagesPath, baseDir);
-    await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`);
-    await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}/${reportId}`);
+    // action
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
+    if (reportType === 'html') {
+        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
+        // folder listing
+        await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`);
+    }
+    else if (reportType === 'csv') {
+        await csvReport(sourceReportDir, reportDir); // TODO index.html built-in
+        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('reports/chart/index.html', reportBaseDir, { recursive: true });
+    }
+    else {
+        throw new Error('Unsupported report type: ' + reportType);
+    }
 }
 catch (error) {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
