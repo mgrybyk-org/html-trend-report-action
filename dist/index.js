@@ -19435,12 +19435,17 @@ const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
     filesContent
         // skip empty files
         .filter((d) => {
+        if (d.json.length > 0) {
+            return true;
+        }
         console.log('csv: empty file', d.name);
-        return d.json.length > 0;
+        return false;
     })
         // convert values to numbers
         .map((d) => {
-        Object.values(d.json[0]).map((v) => parseFloat(v));
+        Object.entries(d.json[0]).forEach(([k, v]) => {
+            d.json[0][k] = parseFloat(v);
+        });
         return d;
     })
         // skip invalid input where values are not numbers

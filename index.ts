@@ -51,7 +51,7 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: R
         dataJson = []
     }
 
-    const filesContent: Array<{ name: string; json: Array<Record<string, string>> }> = []
+    const filesContent: Array<{ name: string; json: Array<Record<string, string | number>> }> = []
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
         const json = await csvtojson().fromFile(sourceReportDir)
         filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
@@ -63,12 +63,17 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: R
     filesContent
         // skip empty files
         .filter((d) => {
+            if (d.json.length > 0) {
+                return true
+            }
             console.log('csv: empty file', d.name)
-            return d.json.length > 0
+            return false
         })
         // convert values to numbers
         .map((d) => {
-            Object.values(d.json[0]).map((v) => parseFloat(v))
+            Object.entries(d.json[0]).forEach(([k, v]) => {
+                d.json[0][k] = parseFloat(v as string)
+            })
             return d
         })
         // skip invalid input where values are not numbers
@@ -99,7 +104,7 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: R
             entry.lines = labels.length
             const record = {
                 meta,
-                data: Object.values(d.json[0] as unknown as Record<string, number>).map((y) => ({ x, y })),
+                data: Object.values(d.json[0] as Record<string, number>).map((y) => ({ x, y })),
             }
             entry.records.push(record)
         })
