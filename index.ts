@@ -11,11 +11,8 @@ const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
 const isFileExist = async (filePath: string) => {
     try {
         await fs.access(filePath, 0)
-        console.log('isFileExist', true, filePath)
         return true
     } catch (err) {
-        console.log(err)
-        console.log('isFileExist', false, filePath)
         return false
     }
 }
