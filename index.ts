@@ -11,8 +11,11 @@ const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
 const isFileExist = async (filePath: string) => {
     try {
         await fs.access(filePath, fs.constants.F_OK)
+        console.log('isFileExist', true, filePath)
         return true
-    } catch {
+    } catch (err) {
+        console.log(err)
+        console.log('isFileExist', false, filePath)
         return false
     }
 }
@@ -45,14 +48,19 @@ const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
 const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: Record<string, string | number>) => {
     const dataFile = `${reportBaseDir}/data.json`
     let dataJson: Array<CsvDataJson>
-    if (await isFileExist(dataFile)) {
-        console.log('exist')
+    await isFileExist(dataFile)
+    try {
         dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
         console.log(dataJson)
-    } else {
-        console.log('no')
+    } catch {
         dataJson = []
     }
+    // if (await isFileExist(dataFile)) {
+    //     dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
+    //     console.log(dataJson)
+    // } else {
+    //     dataJson = []
+    // }
 
     const filesContent: Array<{ name: string; json: Array<Record<string, string | number>> }> = []
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {

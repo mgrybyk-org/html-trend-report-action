@@ -19388,9 +19388,12 @@ const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
 const isFileExist = async (filePath) => {
     try {
         await fs_promises__WEBPACK_IMPORTED_MODULE_3__.access(filePath, fs_promises__WEBPACK_IMPORTED_MODULE_3__.constants.F_OK);
+        console.log('isFileExist', true, filePath);
         return true;
     }
-    catch {
+    catch (err) {
+        console.log(err);
+        console.log('isFileExist', false, filePath);
         return false;
     }
 };
@@ -19417,15 +19420,20 @@ const writeFolderListing = async (ghPagesPath, relPath) => {
 const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
     const dataFile = `${reportBaseDir}/data.json`;
     let dataJson;
-    if (await isFileExist(dataFile)) {
-        console.log('exist');
+    await isFileExist(dataFile);
+    try {
         dataJson = JSON.parse((await fs_promises__WEBPACK_IMPORTED_MODULE_3__.readFile(dataFile)).toString('utf-8'));
         console.log(dataJson);
     }
-    else {
-        console.log('no');
+    catch {
         dataJson = [];
     }
+    // if (await isFileExist(dataFile)) {
+    //     dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
+    //     console.log(dataJson)
+    // } else {
+    //     dataJson = []
+    // }
     const filesContent = [];
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
         const json = await csvtojson__WEBPACK_IMPORTED_MODULE_5___default()().fromFile(sourceReportDir);
