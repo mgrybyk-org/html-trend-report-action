@@ -55,7 +55,7 @@
             h2.appendChild(document.createTextNode(reportConfig.name))
             const link = document.createElement('a')
             link.href = `#${reportConfig.name.replaceAll(' ', '_')}`
-            link.appendChild(document.createTextNode('#'))
+            link.appendChild(document.createTextNode(' #'))
             h2.appendChild(link)
             div.appendChild(h2)
             div.appendChild(ctx)

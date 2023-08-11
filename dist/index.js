@@ -19418,9 +19418,12 @@ const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
     const dataFile = `${reportBaseDir}/data.json`;
     let dataJson;
     if (await isFileExist(dataFile)) {
+        console.log('exist');
         dataJson = JSON.parse((await fs_promises__WEBPACK_IMPORTED_MODULE_3__.readFile(dataFile)).toString('utf-8'));
+        console.log(dataJson);
     }
     else {
+        console.log('no');
         dataJson = [];
     }
     const filesContent = [];

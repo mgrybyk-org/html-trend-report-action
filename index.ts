@@ -46,8 +46,11 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: R
     const dataFile = `${reportBaseDir}/data.json`
     let dataJson: Array<CsvDataJson>
     if (await isFileExist(dataFile)) {
+        console.log('exist')
         dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
+        console.log(dataJson)
     } else {
+        console.log('no')
         dataJson = []
     }
 
