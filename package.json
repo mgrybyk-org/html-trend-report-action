@@ -5,10 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "ncc build index.ts --target es2021 --license licenses.txt",
-    "compile": "tsc",
+    "generate_reports": "node prebuild.js",
+    "build": "npm run generate_reports && ncc build index.ts --target es2021 --license licenses.txt",
+    "compile": "npm run generate_reports && tsc",
     "lint": "eslint --ext .ts --ignore-path .gitignore .",
-    "precommit": "run-p lint compile"
+    "precommit": "run-p compile lint",
+    "postinstall": "npm run generate_reports"
   },
   "keywords": [],
   "author": "",

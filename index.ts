@@ -1,117 +1,12 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as io from '@actions/io'
-import * as fs from 'fs/promises'
-import * as path from 'path'
-import csvtojson from 'csvtojson'
+import { csvReport } from './src/csvReport.js'
+import { isFileExist } from './src/isFileExists.js'
+import { writeFolderListing } from './src/writeFolderListing.js'
 
 const baseDir = 'html-trend-report-action'
 const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
-
-const isFileExist = async (filePath: string) => {
-    try {
-        await fs.access(filePath, 0)
-        return true
-    } catch (err) {
-        return false
-    }
-}
-
-const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
-    const isRoot = relPath === '.'
-    const fullPath = isRoot ? ghPagesPath : `${ghPagesPath}/${relPath}`
-
-    await io.cp('reports/html/index.html', fullPath)
-
-    const links: string[] = []
-    if (!isRoot) {
-        links.push('..')
-    }
-    const listdir = (await fs.readdir(fullPath, { withFileTypes: true }))
-        .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
-        .map((d) => d.name)
-    links.push(...listdir)
-
-    const data: Record<string, string | string[]> = {
-        links,
-    }
-    if (!isRoot) {
-        data.date = new Date().toISOString()
-    }
-
-    await fs.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2))
-}
-
-const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: Record<string, string | number>) => {
-    const dataFile = `${reportBaseDir}/data.json`
-    let dataJson: Array<CsvDataJson>
-
-    if (await isFileExist(dataFile)) {
-        dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
-    } else {
-        dataJson = []
-    }
-
-    const filesContent: Array<{ name: string; json: Array<Record<string, string | number>> }> = []
-    if (sourceReportDir.toLowerCase().endsWith('.csv')) {
-        const json = await csvtojson().fromFile(sourceReportDir)
-        filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
-    } else {
-        // TODO glob
-    }
-
-    const x = Date.now()
-    filesContent
-        // skip empty files
-        .filter((d) => {
-            if (d.json.length > 0) {
-                return true
-            }
-            console.log('csv: empty file', d.name)
-            return false
-        })
-        // convert values to numbers
-        .map((d) => {
-            Object.entries(d.json[0]).forEach(([k, v]) => {
-                d.json[0][k] = parseFloat(v as string)
-            })
-            return d
-        })
-        // skip invalid input where values are not numbers
-        .filter((d) => {
-            const isNotNumber = Object.values(d.json[0]).some((v) => !Number.isFinite(v))
-            if (isNotNumber) {
-                console.log('csv: only number values are supported', d.name, d.json[0])
-            }
-            return !isNotNumber
-        })
-        .forEach((d) => {
-            if (d.json.length > 1) {
-                console.log('csv: only one values row is allowed!')
-            }
-
-            const labels = Object.keys(d.json[0])
-            let entry: CsvDataJson | undefined = dataJson.find((x) => x.name === d.name)
-            if (!entry) {
-                entry = {
-                    name: d.name,
-                    labels,
-                    lines: labels.length,
-                    records: [],
-                }
-                dataJson.push(entry)
-            }
-            entry.labels = labels
-            entry.lines = labels.length
-            const record = {
-                meta,
-                data: Object.values(d.json[0] as Record<string, number>).map((y) => ({ x, y })),
-            }
-            entry.records.push(record)
-        })
-
-    await fs.writeFile(dataFile, JSON.stringify(dataJson, null, 2))
-}
 
 try {
     // vars
@@ -122,7 +17,7 @@ try {
     // const isAllure = core.getInput('isAllure') === 'true'
     const branchName = getBranchName(github.context.ref)
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`
-    const reportDir = `${reportBaseDir}/${github.context.runId}` // github.context.runNumber
+    const reportDir = `${reportBaseDir}/${github.context.runId}`
 
     // log
     console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, gitref: github.context.ref })
@@ -131,11 +26,9 @@ try {
     delete toLog.payload
     console.log('toLog', toLog)
 
-    // TODO index.html built-in
     // folder listing
     // do noot overwrite index.html in the folder root to avoid conflicts
-    if (await isFileExist(`${ghPagesPath}/index.html`)) {
-        // todo add ! above
+    if (!(await isFileExist(`${ghPagesPath}/index.html`))) {
         await writeFolderListing(ghPagesPath, '.')
     }
     await writeFolderListing(ghPagesPath, baseDir)
@@ -151,8 +44,7 @@ try {
         await csvReport(sourceReportDir, reportBaseDir, {
             sha: github.context.sha,
             runId: github.context.runId,
-        }) // TODO index.html built-in
-        await io.cp('reports/chart/index.html', reportBaseDir, { recursive: true })
+        })
     } else {
         throw new Error('Unsupported report type: ' + reportType)
     }

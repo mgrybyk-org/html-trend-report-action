@@ -19371,12 +19371,9 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(7436);
 /* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(_actions_io__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var fs_promises__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(3292);
-/* harmony import */ var fs_promises__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(fs_promises__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(1017);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__nccwpck_require__.n(path__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var csvtojson__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(7463);
-/* harmony import */ var csvtojson__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__nccwpck_require__.n(csvtojson__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _src_csvReport_js__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(7925);
+/* harmony import */ var _src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(2139);
+/* harmony import */ var _src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(4362);
 
 
 
@@ -19385,51 +19382,97 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 
 const baseDir = 'html-trend-report-action';
 const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
-const isFileExist = async (filePath) => {
-    try {
-        await fs_promises__WEBPACK_IMPORTED_MODULE_3__.access(filePath, 0);
-        console.log('isFileExist', true, filePath);
-        return true;
+try {
+    // vars
+    const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_dir');
+    const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('gh_pages');
+    const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_id');
+    const reportType = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_type');
+    // const isAllure = core.getInput('isAllure') === 'true'
+    const branchName = getBranchName(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
+    const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`;
+    const reportDir = `${reportBaseDir}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId}`;
+    // log
+    console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, gitref: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref });
+    // context
+    const toLog = { ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context };
+    delete toLog.payload;
+    console.log('toLog', toLog);
+    // TODO index.html built-in
+    // folder listing
+    // do noot overwrite index.html in the folder root to avoid conflicts
+    if (!(await (0,_src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__/* .isFileExist */ .e)(`${ghPagesPath}/index.html`))) {
+        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, '.');
     }
-    catch (err) {
-        console.log(err);
-        console.log('isFileExist', false, filePath);
-        return false;
+    await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, baseDir);
+    // action
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
+    if (reportType === 'html') {
+        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
+        // folder listing
+        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, `${baseDir}/${branchName}`);
     }
-};
-const writeFolderListing = async (ghPagesPath, relPath) => {
-    const isRoot = relPath === '.';
-    const fullPath = isRoot ? ghPagesPath : `${ghPagesPath}/${relPath}`;
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('reports/html/index.html', fullPath);
-    const links = [];
-    if (!isRoot) {
-        links.push('..');
+    else if (reportType === 'csv') {
+        await (0,_src_csvReport_js__WEBPACK_IMPORTED_MODULE_3__/* .csvReport */ .K)(sourceReportDir, reportBaseDir, {
+            sha: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.sha,
+            runId: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId,
+        }); // TODO index.html built-in
+        // await io.cp('reports/chart/index.html', reportBaseDir, { recursive: true })
     }
-    const listdir = (await fs_promises__WEBPACK_IMPORTED_MODULE_3__.readdir(fullPath, { withFileTypes: true }))
-        .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
-        .map((d) => d.name);
-    links.push(...listdir);
-    const data = {
-        links,
-    };
-    if (!isRoot) {
-        data.date = new Date().toISOString();
+    else {
+        throw new Error('Unsupported report type: ' + reportType);
     }
-    await fs_promises__WEBPACK_IMPORTED_MODULE_3__.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
-};
+}
+catch (error) {
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+}
+
+__webpack_async_result__();
+} catch(e) { __webpack_async_result__(e); } }, 1);
+
+/***/ }),
+
+/***/ 7925:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "K": () => (/* binding */ csvReport)
+});
+
+// EXTERNAL MODULE: external "fs/promises"
+var promises_ = __nccwpck_require__(3292);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
+// EXTERNAL MODULE: ./node_modules/csvtojson/v2/index.js
+var v2 = __nccwpck_require__(7463);
+var v2_default = /*#__PURE__*/__nccwpck_require__.n(v2);
+// EXTERNAL MODULE: ./src/isFileExists.ts
+var isFileExists = __nccwpck_require__(2139);
+;// CONCATENATED MODULE: ./src/report_chart.ts
+// autogenerated
+const chartReport = Buffer.from('PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9IlVURi04IiAvPgogIDwvaGVhZD4KCiAgPGJvZHk+CiAgICA8bWFpbiBpZD0ibWFpbiI+PC9tYWluPgoKICAgIDwhLS0gaHR0cHM6Ly9jZG5qcy5jb20vbGlicmFyaWVzL0NoYXJ0LmpzIC0tPgogICAgPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuanMuY2xvdWRmbGFyZS5jb20vYWpheC9saWJzL0NoYXJ0LmpzLzQuMy4zL2NoYXJ0LnVtZC5qcyI+PC9zY3JpcHQ+CiAgICA8IS0tIGh0dHBzOi8vZ2l0aHViLmNvbS9jaGFydGpzL2NoYXJ0anMtYWRhcHRlci1kYXRlLWZucyAtLT4KICAgIDxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2NoYXJ0anMtYWRhcHRlci1kYXRlLWZuc0AzLjAuMC9kaXN0L2NoYXJ0anMtYWRhcHRlci1kYXRlLWZucy5idW5kbGUubWluLmpzIj48L3NjcmlwdD4KCiAgICA8c2NyaXB0PgogICAgICBjb25zdCBjaGFydHNSb290ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ21haW4nKQoKICAgICAgY29uc3QgQ0hBUlRfQ09MT1JTID0gewogICAgICAgIHJlZDogJ3JnYigyNTUsIDk5LCAxMzIpJywKICAgICAgICBvcmFuZ2U6ICdyZ2IoMjU1LCAxNTksIDY0KScsCiAgICAgICAgeWVsbG93OiAncmdiKDI1NSwgMjA1LCA4NiknLAogICAgICAgIGdyZWVuOiAncmdiKDc1LCAxOTIsIDE5MiknLAogICAgICAgIGJsdWU6ICdyZ2IoNTQsIDE2MiwgMjM1KScsCiAgICAgICAgcHVycGxlOiAncmdiKDE1MywgMTAyLCAyNTUpJywKICAgICAgICBncmV5OiAncmdiKDIwMSwgMjAzLCAyMDcpJywKICAgICAgfQoKICAgICAgY29uc3QgTkFNRURfQ09MT1JTID0gWwogICAgICAgIENIQVJUX0NPTE9SUy5yZWQsCiAgICAgICAgQ0hBUlRfQ09MT1JTLm9yYW5nZSwKICAgICAgICBDSEFSVF9DT0xPUlMueWVsbG93LAogICAgICAgIENIQVJUX0NPTE9SUy5ncmVlbiwKICAgICAgICBDSEFSVF9DT0xPUlMuYmx1ZSwKICAgICAgICBDSEFSVF9DT0xPUlMucHVycGxlLAogICAgICAgIENIQVJUX0NPTE9SUy5ncmV5LAogICAgICBdCgogICAgICBmZXRjaChgLi9kYXRhLmpzb24/dD0ke0RhdGUubm93KCl9YCkKICAgICAgICAudGhlbigocmVzcG9uc2UpID0+IHJlc3BvbnNlLm9rICYmIHJlc3BvbnNlLmpzb24oKSkKICAgICAgICAudGhlbigoanNvbikgPT4gewogICAgICAgICAgaWYgKCFqc29uKSB7CiAgICAgICAgICAgIHJldHVybgogICAgICAgICAgfQoKICAgICAgICAgIC8vIHRvZG86IHJlbW92ZQogICAgICAgICAgd2luZG93Ll9fanNvbiA9IGpzb24KICAgICAgICAgIGNvbnNvbGUubG9nKGpzb24pCgogICAgICAgICAganNvbi5mb3JFYWNoKChyZXBvcnRDb25maWcpID0+IHsKICAgICAgICAgICAgY29uc3QgZGl2ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnZGl2JykKICAgICAgICAgICAgZGl2LnNldEF0dHJpYnV0ZSgnZGF0YS10ZXN0aWQnLCByZXBvcnRDb25maWcubmFtZSkKCiAgICAgICAgICAgIGNvbnN0IGN0eCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2NhbnZhcycpCiAgICAgICAgICAgIGNvbnN0IGgyID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnaDInKQogICAgICAgICAgICBoMi5hcHBlbmRDaGlsZChkb2N1bWVudC5jcmVhdGVUZXh0Tm9kZShyZXBvcnRDb25maWcubmFtZSkpCiAgICAgICAgICAgIGNvbnN0IGxpbmsgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdhJykKICAgICAgICAgICAgbGluay5ocmVmID0gYCMke3JlcG9ydENvbmZpZy5uYW1lLnJlcGxhY2VBbGwoJyAnLCAnXycpfWAKICAgICAgICAgICAgbGluay5hcHBlbmRDaGlsZChkb2N1bWVudC5jcmVhdGVUZXh0Tm9kZSgnICMnKSkKICAgICAgICAgICAgaDIuYXBwZW5kQ2hpbGQobGluaykKICAgICAgICAgICAgZGl2LmFwcGVuZENoaWxkKGgyKQogICAgICAgICAgICBkaXYuYXBwZW5kQ2hpbGQoY3R4KQogICAgICAgICAgICBjaGFydHNSb290LmFwcGVuZENoaWxkKGRpdikKCiAgICAgICAgICAgIGNvbnN0IGRhdGFzZXRzID0gW10KICAgICAgICAgICAgZm9yIChsZXQgaWR4ID0gMDsgaWR4IDwgcmVwb3J0Q29uZmlnLmxpbmVzOyBpZHgrKykgewogICAgICAgICAgICAgIGNvbnN0IGRhdGEgPSBbXQogICAgICAgICAgICAgIGRhdGFzZXRzLnB1c2goewogICAgICAgICAgICAgICAgcmFkaXVzOiAxLAogICAgICAgICAgICAgICAgYm9yZGVyV2lkdGg6IDEsCiAgICAgICAgICAgICAgICBib3JkZXJDb2xvcjogTkFNRURfQ09MT1JTW2lkeF0sCiAgICAgICAgICAgICAgICBsYWJlbDogcmVwb3J0Q29uZmlnLmxhYmVsc1tpZHhdLAogICAgICAgICAgICAgICAgZGF0YSwKICAgICAgICAgICAgICB9KQoKICAgICAgICAgICAgICByZXBvcnRDb25maWcucmVjb3Jkcy5mb3JFYWNoKChyKSA9PiB7CiAgICAgICAgICAgICAgICAvLyByLm1ldGEgLy8gVE9ETyBzaG93IHJ1bklkIGFuZCBzaGEgaW4gdG9vbHRpcAogICAgICAgICAgICAgICAgaWYgKHIuZGF0YVtpZHhdKSB7CiAgICAgICAgICAgICAgICAgIGRhdGEucHVzaChyLmRhdGFbaWR4XSkKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICB9KQogICAgICAgICAgICB9CgogICAgICAgICAgICBuZXcgQ2hhcnQoY3R4LCB7CiAgICAgICAgICAgICAgdHlwZTogJ2xpbmUnLAogICAgICAgICAgICAgIGRhdGE6IHsKICAgICAgICAgICAgICAgIGRhdGFzZXRzLAogICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgb3B0aW9uczogewogICAgICAgICAgICAgICAgLy8gVHVybiBvZmYgYW5pbWF0aW9ucyBhbmQgZGF0YSBwYXJzaW5nIGZvciBwZXJmb3JtYW5jZQogICAgICAgICAgICAgICAgYW5pbWF0aW9uOiBmYWxzZSwKICAgICAgICAgICAgICAgIHBhcnNpbmc6IGZhbHNlLAoKICAgICAgICAgICAgICAgIGludGVyYWN0aW9uOiB7CiAgICAgICAgICAgICAgICAgIG1vZGU6ICduZWFyZXN0JywKICAgICAgICAgICAgICAgICAgYXhpczogJ3gnLAogICAgICAgICAgICAgICAgICBpbnRlcnNlY3Q6IGZhbHNlLAogICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgIHBsdWdpbnM6IHsKICAgICAgICAgICAgICAgICAgZGVjaW1hdGlvbjogeyBlbmFibGVkOiB0cnVlLCBhbGdvcml0aG06ICdsdHRiJywgc2FtcGxlczogNjAsIHRocmVzaG9sZDogNjAgfSwKICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICBzY2FsZXM6IHsKICAgICAgICAgICAgICAgICAgeDogewogICAgICAgICAgICAgICAgICAgIHR5cGU6ICd0aW1lJywKICAgICAgICAgICAgICAgICAgICB0aWNrczogewogICAgICAgICAgICAgICAgICAgICAgc291cmNlOiAnYXV0bycsCiAgICAgICAgICAgICAgICAgICAgICAvLyBEaXNhYmxlZCByb3RhdGlvbiBmb3IgcGVyZm9ybWFuY2UKICAgICAgICAgICAgICAgICAgICAgIG1heFJvdGF0aW9uOiAwLAogICAgICAgICAgICAgICAgICAgICAgYXV0b1NraXA6IHRydWUsCiAgICAgICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgfSkKICAgICAgICAgIH0pCiAgICAgICAgfSkKICAgIDwvc2NyaXB0PgogIDwvYm9keT4KPC9odG1sPgo=', 'base64');
+
+;// CONCATENATED MODULE: ./src/csvReport.ts
+
+
+
+
+
 const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
     const dataFile = `${reportBaseDir}/data.json`;
     let dataJson;
-    if (await isFileExist(dataFile)) {
-        dataJson = JSON.parse((await fs_promises__WEBPACK_IMPORTED_MODULE_3__.readFile(dataFile)).toString('utf-8'));
+    if (await (0,isFileExists/* isFileExist */.e)(dataFile)) {
+        dataJson = JSON.parse((await promises_.readFile(dataFile)).toString('utf-8'));
     }
     else {
         dataJson = [];
     }
     const filesContent = [];
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
-        const json = await csvtojson__WEBPACK_IMPORTED_MODULE_5___default()().fromFile(sourceReportDir);
-        filesContent.push({ name: path__WEBPACK_IMPORTED_MODULE_4__.basename(sourceReportDir, path__WEBPACK_IMPORTED_MODULE_4__.extname(sourceReportDir)), json });
+        const json = await v2_default()().fromFile(sourceReportDir);
+        filesContent.push({ name: external_path_.basename(sourceReportDir, external_path_.extname(sourceReportDir)), json });
     }
     else {
         // TODO glob
@@ -19482,56 +19525,74 @@ const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
         };
         entry.records.push(record);
     });
-    await fs_promises__WEBPACK_IMPORTED_MODULE_3__.writeFile(dataFile, JSON.stringify(dataJson, null, 2));
+    await promises_.writeFile(dataFile, JSON.stringify(dataJson, null, 2));
+    await promises_.writeFile(`${reportBaseDir}/index.html`, chartReport);
 };
-try {
-    // vars
-    const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_dir');
-    const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('gh_pages');
-    const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_id');
-    const reportType = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_type');
-    // const isAllure = core.getInput('isAllure') === 'true'
-    const branchName = getBranchName(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
-    const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`;
-    const reportDir = `${reportBaseDir}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId}`; // github.context.runNumber
-    // log
-    console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, gitref: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref });
-    // context
-    const toLog = { ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context };
-    delete toLog.payload;
-    console.log('toLog', toLog);
-    // TODO index.html built-in
-    // folder listing
-    // do noot overwrite index.html in the folder root to avoid conflicts
-    if (await isFileExist(`${ghPagesPath}/index.html`)) {
-        // todo add ! above
-        await writeFolderListing(ghPagesPath, '.');
-    }
-    await writeFolderListing(ghPagesPath, baseDir);
-    // action
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
-    if (reportType === 'html') {
-        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
-        // folder listing
-        await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`);
-    }
-    else if (reportType === 'csv') {
-        await csvReport(sourceReportDir, reportBaseDir, {
-            sha: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.sha,
-            runId: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId,
-        }); // TODO index.html built-in
-        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('reports/chart/index.html', reportBaseDir, { recursive: true });
-    }
-    else {
-        throw new Error('Unsupported report type: ' + reportType);
-    }
-}
-catch (error) {
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
-}
 
-__webpack_async_result__();
-} catch(e) { __webpack_async_result__(e); } }, 1);
+
+/***/ }),
+
+/***/ 2139:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "e": () => (/* binding */ isFileExist)
+/* harmony export */ });
+/* harmony import */ var fs_promises__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(3292);
+/* harmony import */ var fs_promises__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(fs_promises__WEBPACK_IMPORTED_MODULE_0__);
+
+const isFileExist = async (filePath) => {
+    try {
+        await fs_promises__WEBPACK_IMPORTED_MODULE_0__.access(filePath, 0);
+        return true;
+    }
+    catch (err) {
+        return false;
+    }
+};
+
+
+/***/ }),
+
+/***/ 4362:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "l": () => (/* binding */ writeFolderListing)
+});
+
+// EXTERNAL MODULE: external "fs/promises"
+var promises_ = __nccwpck_require__(3292);
+;// CONCATENATED MODULE: ./src/report_listing.ts
+// autogenerated
+const listingReport = Buffer.from('PCEtLSBodG1sLXRyZW5kLXJlcG9ydC1hY3Rpb24gLS0+CjwhZG9jdHlwZSBodG1sPgo8aHRtbCBsYW5nPSJlbiI+CiAgPGhlYWQ+CiAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCIgLz4KICA8L2hlYWQ+CgogIDxib2R5PgogICAgPGRpdiBpZD0iYXBwIj4KICAgICAgPHRhYmxlIGlkPSJsaXN0LXRhYmxlIj4KICAgICAgICA8dGhlYWQ+CiAgICAgICAgICA8dGg+S2V5PC90aD4KICAgICAgICAgIDx0aD5WYWx1ZTwvdGg+CiAgICAgICAgPC90aGVhZD4KICAgICAgICA8dGJvZHk+PC90Ym9keT4KICAgICAgICA8dGZvb3Q+PC90Zm9vdD4KICAgICAgPC90YWJsZT4KICAgICAgPHVsIGlkPSJsaW5rcyI+PC91bD4KICAgIDwvZGl2PgoKICAgIDxzY3JpcHQ+CiAgICAgIGNvbnN0IGNyZWF0ZVRyID0gKGRhdGEsIGNlbGxUeXBlID0gJ3RkJykgPT4gewogICAgICAgIGNvbnN0IHJvdyA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3RyJykKCiAgICAgICAgZGF0YS5mb3JFYWNoKCh2KSA9PiB7CiAgICAgICAgICBjb25zdCBjZWxsID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChjZWxsVHlwZSkKICAgICAgICAgIGNlbGwuYXBwZW5kQ2hpbGQoZG9jdW1lbnQuY3JlYXRlVGV4dE5vZGUodikpCiAgICAgICAgICByb3cuYXBwZW5kQ2hpbGQoY2VsbCkKICAgICAgICB9KQoKICAgICAgICByZXR1cm4gcm93CiAgICAgIH0KCiAgICAgIGNvbnN0IGxpbmtzTGlzdCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdsaW5rcycpCiAgICAgIGNvbnN0IHRhYmxlID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2xpc3QtdGFibGUnKQogICAgICBjb25zdCB0YWJsZUJvZHkgPSB0YWJsZS5nZXRFbGVtZW50c0J5VGFnTmFtZSgndGJvZHknKVswXQoKICAgICAgZmV0Y2goYC4vZGF0YS5qc29uP3Q9JHtEYXRlLm5vdygpfWApCiAgICAgICAgLnRoZW4oKHJlc3BvbnNlKSA9PiByZXNwb25zZS5vayAmJiByZXNwb25zZS5qc29uKCkpCiAgICAgICAgLnRoZW4oKGpzb24pID0+IHsKICAgICAgICAgIGlmICghanNvbikgewogICAgICAgICAgICByZXR1cm4KICAgICAgICAgIH0KCiAgICAgICAgICBqc29uLmxpbmtzLmZvckVhY2goKHJlY29yZCkgPT4gewogICAgICAgICAgICBjb25zdCBsaW5rID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnYScpCiAgICAgICAgICAgIGxpbmsuYXBwZW5kQ2hpbGQoZG9jdW1lbnQuY3JlYXRlVGV4dE5vZGUocmVjb3JkKSkKICAgICAgICAgICAgbGluay5ocmVmID0gcmVjb3JkCiAgICAgICAgICAgIGNvbnN0IGxpID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnbGknKQogICAgICAgICAgICBsaS5hcHBlbmRDaGlsZChsaW5rKQogICAgICAgICAgICBsaW5rc0xpc3QuYXBwZW5kQ2hpbGQobGkpCiAgICAgICAgICB9KQogICAgICAgICAgZGVsZXRlIGpzb24ubGlua3MKCiAgICAgICAgICBpZiAoT2JqZWN0LmtleXMoanNvbikubGVuZ3RoID09PSAwKSB7CiAgICAgICAgICAgIHRhYmxlLnJlbW92ZSgpCiAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICBPYmplY3QuZW50cmllcyhqc29uKS5mb3JFYWNoKChyZWNvcmQpID0+IHsKICAgICAgICAgICAgICB0YWJsZUJvZHkuYXBwZW5kQ2hpbGQoY3JlYXRlVHIocmVjb3JkKSkKICAgICAgICAgICAgfSkKICAgICAgICAgIH0KICAgICAgICB9KQogICAgPC9zY3JpcHQ+CiAgPC9ib2R5Pgo8L2h0bWw+Cg==', 'base64');
+
+;// CONCATENATED MODULE: ./src/writeFolderListing.ts
+
+
+const writeFolderListing = async (ghPagesPath, relPath) => {
+    const isRoot = relPath === '.';
+    const fullPath = isRoot ? ghPagesPath : `${ghPagesPath}/${relPath}`;
+    const links = [];
+    if (!isRoot) {
+        links.push('..');
+    }
+    const listdir = (await promises_.readdir(fullPath, { withFileTypes: true }))
+        .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
+        .map((d) => d.name);
+    links.push(...listdir);
+    const data = {
+        links,
+    };
+    if (!isRoot) {
+        data.date = new Date().toISOString();
+    }
+    await promises_.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
+    await promises_.writeFile(`${fullPath}/index.html`, listingReport);
+};
+
 
 /***/ }),
 
