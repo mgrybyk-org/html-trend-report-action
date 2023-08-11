@@ -42,7 +42,7 @@ const writeFolderListing = async (ghPagesPath: string, relPath: string) => {
     await fs.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2))
 }
 
-const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
+const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: Record<string, string | number>) => {
     const dataFile = `${reportBaseDir}/data.json`
     let dataJson: Array<CsvDataJson>
     if (await isFileExist(dataFile)) {
@@ -61,8 +61,29 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
 
     const x = Date.now()
     filesContent
-        .filter((d) => d.json.length > 0)
+        // skip empty files
+        .filter((d) => {
+            console.log('csv: empty file', d.name)
+            return d.json.length > 0
+        })
+        // convert values to numbers
+        .map((d) => {
+            Object.values(d.json[0]).map((v) => parseFloat(v))
+            return d
+        })
+        // skip invalid input where values are not numbers
+        .filter((d) => {
+            const isNotNumber = Object.values(d.json[0]).some((v) => !Number.isFinite(v))
+            if (isNotNumber) {
+                console.log('csv: only number values are supported', d.name, d.json[0])
+            }
+            return !isNotNumber
+        })
         .forEach((d) => {
+            if (d.json.length > 1) {
+                console.log('csv: only one values row is allowed!')
+            }
+
             const labels = Object.keys(d.json[0])
             let entry: CsvDataJson | undefined = dataJson.find((x) => x.name === d.name)
             if (!entry) {
@@ -70,20 +91,17 @@ const csvReport = async (sourceReportDir: string, reportBaseDir: string) => {
                     name: d.name,
                     labels,
                     lines: labels.length,
-                    records: {
-                        meta: [], // TODO
-                        data: [],
-                    },
+                    records: [],
                 }
                 dataJson.push(entry)
             }
             entry.labels = labels
             entry.lines = labels.length
-            entry.records.data.push(
-                Object.values(d.json[0])
-                    .map((s) => parseFloat(s))
-                    .map((y) => ({ x, y }))
-            )
+            const record = {
+                meta,
+                data: Object.values(d.json[0] as unknown as Record<string, number>).map((y) => ({ x, y })),
+            }
+            entry.records.push(record)
         })
 
     await fs.writeFile(dataFile, JSON.stringify(dataJson, null, 2))
@@ -124,7 +142,10 @@ try {
         // folder listing
         await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
     } else if (reportType === 'csv') {
-        await csvReport(sourceReportDir, reportBaseDir) // TODO index.html built-in
+        await csvReport(sourceReportDir, reportBaseDir, {
+            sha: github.context.sha,
+            runId: github.context.runId,
+        }) // TODO index.html built-in
         await io.cp('reports/chart/index.html', reportBaseDir, { recursive: true })
     } else {
         throw new Error('Unsupported report type: ' + reportType)

@@ -19414,7 +19414,7 @@ const writeFolderListing = async (ghPagesPath, relPath) => {
     }
     await fs_promises__WEBPACK_IMPORTED_MODULE_3__.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
 };
-const csvReport = async (sourceReportDir, reportBaseDir) => {
+const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
     const dataFile = `${reportBaseDir}/data.json`;
     let dataJson;
     if (await isFileExist(dataFile)) {
@@ -19433,8 +19433,28 @@ const csvReport = async (sourceReportDir, reportBaseDir) => {
     }
     const x = Date.now();
     filesContent
-        .filter((d) => d.json.length > 0)
+        // skip empty files
+        .filter((d) => {
+        console.log('csv: empty file', d.name);
+        return d.json.length > 0;
+    })
+        // convert values to numbers
+        .map((d) => {
+        Object.values(d.json[0]).map((v) => parseFloat(v));
+        return d;
+    })
+        // skip invalid input where values are not numbers
+        .filter((d) => {
+        const isNotNumber = Object.values(d.json[0]).some((v) => !Number.isFinite(v));
+        if (isNotNumber) {
+            console.log('csv: only number values are supported', d.name, d.json[0]);
+        }
+        return !isNotNumber;
+    })
         .forEach((d) => {
+        if (d.json.length > 1) {
+            console.log('csv: only one values row is allowed!');
+        }
         const labels = Object.keys(d.json[0]);
         let entry = dataJson.find((x) => x.name === d.name);
         if (!entry) {
@@ -19442,18 +19462,17 @@ const csvReport = async (sourceReportDir, reportBaseDir) => {
                 name: d.name,
                 labels,
                 lines: labels.length,
-                records: {
-                    meta: [],
-                    data: [],
-                },
+                records: [],
             };
             dataJson.push(entry);
         }
         entry.labels = labels;
         entry.lines = labels.length;
-        entry.records.data.push(Object.values(d.json[0])
-            .map((s) => parseFloat(s))
-            .map((y) => ({ x, y })));
+        const record = {
+            meta,
+            data: Object.values(d.json[0]).map((y) => ({ x, y })),
+        };
+        entry.records.push(record);
     });
     await fs_promises__WEBPACK_IMPORTED_MODULE_3__.writeFile(dataFile, JSON.stringify(dataJson, null, 2));
 };
@@ -19489,7 +19508,10 @@ try {
         await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`);
     }
     else if (reportType === 'csv') {
-        await csvReport(sourceReportDir, reportBaseDir); // TODO index.html built-in
+        await csvReport(sourceReportDir, reportBaseDir, {
+            sha: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.sha,
+            runId: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId,
+        }); // TODO index.html built-in
         await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp('reports/chart/index.html', reportBaseDir, { recursive: true });
     }
     else {

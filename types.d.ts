@@ -3,12 +3,12 @@ interface CsvDataItem {
     y: number
 }
 interface CsvDataRecords {
-    meta: Array<Record<string, string>>
-    data: Array<Array<CsvDataItem>>
+    meta: Record<string, string | number>
+    data: Array<CsvDataItem>
 }
 interface CsvDataJson {
     name: string
     labels: string[]
     lines: number
-    records: CsvDataRecords
+    records: Array<CsvDataRecords>
 }

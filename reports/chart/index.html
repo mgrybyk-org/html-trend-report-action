@@ -52,9 +52,9 @@
             const h2 = document.createElement('h2')
             h2.appendChild(document.createTextNode(reportConfig.name))
             const link = document.createElement('a')
-            a.href = `#${reportConfig.name.replaceAll(' ', '_')}`
-            a.appendChild(document.createTextNode('#'))
-            h2.appendChild(a)
+            link.href = `#${reportConfig.name.replaceAll(' ', '_')}`
+            link.appendChild(document.createTextNode('#'))
+            h2.appendChild(link)
             div.appendChild(h2)
             div.appendChild(ctx)
             chartsRoot.appendChild(div)
@@ -66,11 +66,16 @@
                 radius: 1,
                 borderWidth: 1,
                 borderColor: NAMED_COLORS[idx],
-                label: reportConfig.labes[idx],
+                label: reportConfig.labels[idx],
                 data,
               })
 
-              reportConfig.records.data[idx].forEach((d) => data.push(d))
+              reportConfig.records.forEach((r) => {
+                // r.meta // TODO show runId and sha in tooltip
+                if (r.data[idx]) {
+                  data.push(r.data[idx])
+                }
+              })
             }
 
             new Chart(ctx, {
