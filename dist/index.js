@@ -10959,30 +10959,6 @@ module.exports = ret;
 
 /***/ }),
 
-/***/ 9426:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-
-var isUtf8 = __nccwpck_require__(5481);
-
-module.exports = function (x) {
-	// Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
-	// conversion translates it to FEFF (UTF-16 BOM)
-	if (typeof x === 'string' && x.charCodeAt(0) === 0xFEFF) {
-		return x.slice(1);
-	}
-
-	if (Buffer.isBuffer(x) && isUtf8(x) &&
-		x[0] === 0xEF && x[1] === 0xBB && x[2] === 0xBF) {
-		return x.slice(3);
-	}
-
-	return x;
-};
-
-
-/***/ }),
-
 /***/ 1356:
 /***/ (function(__unused_webpack_module, exports) {
 
@@ -11829,7 +11805,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-var strip_bom_1 = __importDefault(__nccwpck_require__(9426));
+var strip_bom_1 = __importDefault(__nccwpck_require__(8551));
 /**
  * For each data chunk coming to parser:
  * 1. append the data to the buffer that is left from last chunk
@@ -16231,6 +16207,30 @@ function onceStrict (fn) {
 
 /***/ }),
 
+/***/ 8551:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+
+var isUtf8 = __nccwpck_require__(5481);
+
+module.exports = function (x) {
+	// Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
+	// conversion translates it to FEFF (UTF-16 BOM)
+	if (typeof x === 'string' && x.charCodeAt(0) === 0xFEFF) {
+		return x.slice(1);
+	}
+
+	if (Buffer.isBuffer(x) && isUtf8(x) &&
+		x[0] === 0xEF && x[1] === 0xBB && x[2] === 0xBF) {
+		return x.slice(3);
+	}
+
+	return x;
+};
+
+
+/***/ }),
+
 /***/ 4256:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -19398,7 +19398,6 @@ try {
     const toLog = { ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context };
     delete toLog.payload;
     console.log('toLog', toLog);
-    // TODO index.html built-in
     // folder listing
     // do noot overwrite index.html in the folder root to avoid conflicts
     if (!(await (0,_src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__/* .isFileExist */ .e)(`${ghPagesPath}/index.html`))) {
@@ -19416,8 +19415,7 @@ try {
         await (0,_src_csvReport_js__WEBPACK_IMPORTED_MODULE_3__/* .csvReport */ .K)(sourceReportDir, reportBaseDir, {
             sha: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.sha,
             runId: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId,
-        }); // TODO index.html built-in
-        // await io.cp('reports/chart/index.html', reportBaseDir, { recursive: true })
+        });
     }
     else {
         throw new Error('Unsupported report type: ' + reportType);
