@@ -19387,7 +19387,7 @@ const baseDir = 'html-trend-report-action';
 const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
 const isFileExist = async (filePath) => {
     try {
-        await fs_promises__WEBPACK_IMPORTED_MODULE_3__.access(filePath, fs_promises__WEBPACK_IMPORTED_MODULE_3__.constants.F_OK);
+        await fs_promises__WEBPACK_IMPORTED_MODULE_3__.access(filePath, 0);
         console.log('isFileExist', true, filePath);
         return true;
     }
@@ -19420,20 +19420,12 @@ const writeFolderListing = async (ghPagesPath, relPath) => {
 const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
     const dataFile = `${reportBaseDir}/data.json`;
     let dataJson;
-    await isFileExist(dataFile);
-    try {
+    if (await isFileExist(dataFile)) {
         dataJson = JSON.parse((await fs_promises__WEBPACK_IMPORTED_MODULE_3__.readFile(dataFile)).toString('utf-8'));
-        console.log(dataJson);
     }
-    catch {
+    else {
         dataJson = [];
     }
-    // if (await isFileExist(dataFile)) {
-    //     dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
-    //     console.log(dataJson)
-    // } else {
-    //     dataJson = []
-    // }
     const filesContent = [];
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
         const json = await csvtojson__WEBPACK_IMPORTED_MODULE_5___default()().fromFile(sourceReportDir);
