@@ -19398,14 +19398,15 @@ try {
     const toLog = { ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context };
     delete toLog.payload;
     console.log('toLog', toLog);
+    // action
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
     // folder listing
     // do noot overwrite index.html in the folder root to avoid conflicts
     if (!(await (0,_src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__/* .isFileExist */ .e)(`${ghPagesPath}/index.html`))) {
         await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, '.');
     }
     await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, baseDir);
-    // action
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
+    // process report
     if (reportType === 'html') {
         await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
         // folder listing

@@ -26,6 +26,9 @@ try {
     delete toLog.payload
     console.log('toLog', toLog)
 
+    // action
+    await io.mkdirP(reportBaseDir)
+
     // folder listing
     // do noot overwrite index.html in the folder root to avoid conflicts
     if (!(await isFileExist(`${ghPagesPath}/index.html`))) {
@@ -33,8 +36,7 @@ try {
     }
     await writeFolderListing(ghPagesPath, baseDir)
 
-    // action
-    await io.mkdirP(reportBaseDir)
+    // process report
     if (reportType === 'html') {
         await io.cp(sourceReportDir, reportDir, { recursive: true })
 
