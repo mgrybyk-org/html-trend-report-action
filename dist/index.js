@@ -19442,7 +19442,7 @@ try {
         await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, baseDir);
     }
     // outputs
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_url', ghPagesReportDir);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_url', reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_history_url', ghPagesBaseDir);
 }
 catch (error) {

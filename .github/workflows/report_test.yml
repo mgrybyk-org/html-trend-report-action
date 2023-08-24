@@ -36,18 +36,18 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
       - name: Update screenshots in PRs
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'pull_request'
         run: npm run e2e -- --update-snapshots
       - name: git commit and push
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'pull_request'
         uses: mgrybyk/git-commit-pull-push-action@v1
         with:
-          branch: main
+          branch: ${{ github.head_ref }}
           commit_message: Update screenshots
           add_args: 'tests/**/*.png'
 
       - name: Do not update screenshots if not PR
-        if: github.event_name == 'pull_request'
+        if: github.event_name != 'pull_request'
         run: npm run e2e
 
       - name: Checkout gh-pages
@@ -68,18 +68,23 @@ jobs:
           gh_pages: 'gh-pages-dir'
           report_dir: 'allure-results'
 
-      - run: |
+      - name: generate html report data
+        run: |
+          if: always()
           outFile=test/html/data.json
           echo { > $outFile
           echo "  \"github_run_id\": \"${{ github.run_id }}\"" >> $outFile
           echo } >> $outFile
 
-      - run: |
+      - name: generate csv report data
+        if: ${{ always() && steps.allure.outputs.report_url }}
+        run: |
           outFile=test/Allure_Trend.csv
           echo Passed,Failed,Total > $outFile
           echo ${{ steps.allure.outputs.test_result_passed }},${{ steps.allure.outputs.test_result_failed }},${{ steps.allure.outputs.test_result_total }} >> $outFile
 
       - name: Local HTML Report
+        if: always()
         uses: ./ # Uses an action in the root directory
         with:
           report_id: 'html-report-1'
@@ -87,11 +92,13 @@ jobs:
           report_dir: 'test/html'
 
       - name: Local Chart Report
+        if: ${{ always() && steps.allure.outputs.report_url }}
         uses: ./
         with:
           report_id: 'chart-report-2'
           gh_pages: 'gh-pages-dir'
           report_dir: 'test/Allure_Trend.csv'
+          list_dirs: true
           report_type: csv
 
       - name: Git Commit and Push Action

@@ -20,6 +20,16 @@ inputs:
     description: 'html or csv'
     required: false
     default: 'html'
+  list_dirs:
+    description: 'Write index.html to the Github Action folders. Might cause concurrency issues!'
+    required: false
+    default: false
+outputs:
+  # report_url and report_history_url have the same url for CSV reports
+  report_url:
+    description: 'Published Report url'
+  report_history_url:
+    description: 'Published History list url'
 runs:
   using: 'node16'
   main: 'dist/index.js'

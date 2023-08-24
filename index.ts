@@ -80,7 +80,7 @@ try {
     }
 
     // outputs
-    core.setOutput('report_url', ghPagesReportDir)
+    core.setOutput('report_url', reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir)
     core.setOutput('report_history_url', ghPagesBaseDir)
 } catch (error) {
     core.setFailed(error.message)
