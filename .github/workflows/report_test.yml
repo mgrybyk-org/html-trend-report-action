@@ -36,10 +36,10 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
       - name: Update screenshots in PRs
-        if: github.event_name == 'pull_request'
+        if: github.event_name != 'pull_request'
         run: npm run e2e -- --update-snapshots
       - name: git commit and push
-        if: github.event_name == 'pull_request'
+        if: github.event_name != 'pull_request'
         uses: mgrybyk/git-commit-pull-push-action@v1
         with:
           branch: ${{ github.head_ref }}
@@ -47,7 +47,7 @@ jobs:
           add_args: 'tests/**/*.png'
 
       - name: Do not update screenshots if not PR
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'pull_request'
         run: npm run e2e
 
       - name: Checkout gh-pages
