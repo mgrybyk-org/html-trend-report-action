@@ -69,8 +69,8 @@ jobs:
           report_dir: 'allure-results'
 
       - name: generate html report data
+        if: always()
         run: |
-          if: always()
           outFile=test/html/data.json
           echo { > $outFile
           echo "  \"github_run_id\": \"${{ github.run_id }}\"" >> $outFile
