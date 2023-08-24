@@ -42,7 +42,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: mgrybyk/git-commit-pull-push-action@v1
         with:
-          branch: ${{ github.head_ref }}
+          branch: main
           commit_message: Update screenshots
           add_args: 'tests/**/*.png'
 
