@@ -1,9 +1,9 @@
-name: 'HTML Reports with history'
-description: 'Publish HTML reports with history per branch'
+name: 'Publish Report per branch'
+description: 'Publish HTML, Plot (csv) reports with trend history per branch'
 author: 'mgrybyk'
 branding:
   icon: 'layout'
-  color: 'green'
+  color: 'gray-dark'
 inputs:
   report_id:
     description: 'Unique report id'
@@ -14,7 +14,7 @@ inputs:
     required: true
     default: 'gh-pages'
   report_dir:
-    description: 'Folder with generated html report or csv files'
+    description: 'Folder with generated html report or csv file(s)'
     required: true
   report_type:
     description: 'html or csv'

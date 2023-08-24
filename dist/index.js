@@ -15731,10 +15731,6 @@ function getNodeRequestOptions(request) {
 		agent = agent(parsedURL);
 	}
 
-	if (!headers.has('Connection') && !agent) {
-		headers.set('Connection', 'close');
-	}
-
 	// HTTP-network fetch step 4.2
 	// chunked encoding is handled by Node.js
 
@@ -16154,6 +16150,7 @@ exports.Headers = Headers;
 exports.Request = Request;
 exports.Response = Response;
 exports.FetchError = FetchError;
+exports.AbortError = AbortError;
 
 
 /***/ }),
@@ -19374,38 +19371,58 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony import */ var _src_csvReport_js__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(7925);
 /* harmony import */ var _src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(2139);
 /* harmony import */ var _src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(4362);
+/* harmony import */ var _src_helpers_js__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(3015);
 
 
 
 
 
 
-const baseDir = 'html-trend-report-action';
-const getBranchName = (gitRef) => gitRef.replace('refs/heads/', '');
+
+const baseDir = 'report-action';
 try {
+    const runTimestamp = Date.now();
     // vars
     const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_dir');
     const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('gh_pages');
     const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_id');
     const reportType = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_type');
-    // const isAllure = core.getInput('isAllure') === 'true'
-    const branchName = getBranchName(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
+    const listDirs = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('list_dirs') == 'true';
+    const branchName = (0,_src_helpers_js__WEBPACK_IMPORTED_MODULE_6__/* .getBranchName */ .L)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`;
-    const reportDir = `${reportBaseDir}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId}`;
+    /**
+     * `runId` is unique but won't change on job re-run
+     * `runNumber` is not unique and resets from time to time
+     * that's why the `runTimestamp` is used to guarantee uniqueness
+     */
+    const runUniqueId = `${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId}_${runTimestamp}`;
+    const reportDir = `${reportBaseDir}/${runUniqueId}`;
+    // urls
+    const ghPagesUrl = `https://${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner}.github.io/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo}`;
+    const ghPagesBaseDir = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`;
+    const ghPagesReportDir = `${ghPagesBaseDir}/${runUniqueId}`;
     // log
-    console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, gitref: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref });
-    // context
-    const toLog = { ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context };
-    delete toLog.payload;
-    console.log('toLog', toLog);
+    console.log({
+        report_dir: sourceReportDir,
+        gh_pages: ghPagesPath,
+        report_id: reportId,
+        runUniqueId,
+        ref: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref,
+        repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        branchName,
+        reportBaseDir,
+        reportDir,
+        report_url: ghPagesReportDir,
+        listDirs,
+    });
+    if (!(await (0,_src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__/* .isFileExist */ .e)(ghPagesPath))) {
+        throw new Error("Folder with gh-pages branch doesn't exist: " + ghPagesPath);
+    }
+    if (!['html', 'csv'].includes(reportType)) {
+        throw new Error('Unsupported report type: ' + reportType);
+    }
     // action
     await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
-    // folder listing
-    // do noot overwrite index.html in the folder root to avoid conflicts
-    if (!(await (0,_src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__/* .isFileExist */ .e)(`${ghPagesPath}/index.html`))) {
-        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, '.');
-    }
-    await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, baseDir);
     // process report
     if (reportType === 'html') {
         await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
@@ -19415,12 +19432,18 @@ try {
     else if (reportType === 'csv') {
         await (0,_src_csvReport_js__WEBPACK_IMPORTED_MODULE_3__/* .csvReport */ .K)(sourceReportDir, reportBaseDir, {
             sha: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.sha,
-            runId: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId,
         });
     }
-    else {
-        throw new Error('Unsupported report type: ' + reportType);
+    // folder listing
+    if (listDirs) {
+        if (await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .shouldWriteRootHtml */ .z)(ghPagesPath)) {
+            await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, '.');
+        }
+        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, baseDir);
     }
+    // outputs
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_url', ghPagesReportDir);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_history_url', ghPagesBaseDir);
 }
 catch (error) {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
@@ -19451,7 +19474,7 @@ var v2_default = /*#__PURE__*/__nccwpck_require__.n(v2);
 var isFileExists = __nccwpck_require__(2139);
 ;// CONCATENATED MODULE: ./src/report_chart.ts
 // autogenerated
-const chartReport = Buffer.from('PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9IlVURi04IiAvPgogIDwvaGVhZD4KCiAgPGJvZHk+CiAgICA8bWFpbiBpZD0ibWFpbiI+PC9tYWluPgoKICAgIDwhLS0gaHR0cHM6Ly9jZG5qcy5jb20vbGlicmFyaWVzL0NoYXJ0LmpzIC0tPgogICAgPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuanMuY2xvdWRmbGFyZS5jb20vYWpheC9saWJzL0NoYXJ0LmpzLzQuMy4zL2NoYXJ0LnVtZC5qcyI+PC9zY3JpcHQ+CiAgICA8IS0tIGh0dHBzOi8vZ2l0aHViLmNvbS9jaGFydGpzL2NoYXJ0anMtYWRhcHRlci1kYXRlLWZucyAtLT4KICAgIDxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2NoYXJ0anMtYWRhcHRlci1kYXRlLWZuc0AzLjAuMC9kaXN0L2NoYXJ0anMtYWRhcHRlci1kYXRlLWZucy5idW5kbGUubWluLmpzIj48L3NjcmlwdD4KCiAgICA8c2NyaXB0PgogICAgICBjb25zdCBjaGFydHNSb290ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ21haW4nKQoKICAgICAgY29uc3QgQ0hBUlRfQ09MT1JTID0gewogICAgICAgIHJlZDogJ3JnYigyNTUsIDk5LCAxMzIpJywKICAgICAgICBvcmFuZ2U6ICdyZ2IoMjU1LCAxNTksIDY0KScsCiAgICAgICAgeWVsbG93OiAncmdiKDI1NSwgMjA1LCA4NiknLAogICAgICAgIGdyZWVuOiAncmdiKDc1LCAxOTIsIDE5MiknLAogICAgICAgIGJsdWU6ICdyZ2IoNTQsIDE2MiwgMjM1KScsCiAgICAgICAgcHVycGxlOiAncmdiKDE1MywgMTAyLCAyNTUpJywKICAgICAgICBncmV5OiAncmdiKDIwMSwgMjAzLCAyMDcpJywKICAgICAgfQoKICAgICAgY29uc3QgTkFNRURfQ09MT1JTID0gWwogICAgICAgIENIQVJUX0NPTE9SUy5yZWQsCiAgICAgICAgQ0hBUlRfQ09MT1JTLm9yYW5nZSwKICAgICAgICBDSEFSVF9DT0xPUlMueWVsbG93LAogICAgICAgIENIQVJUX0NPTE9SUy5ncmVlbiwKICAgICAgICBDSEFSVF9DT0xPUlMuYmx1ZSwKICAgICAgICBDSEFSVF9DT0xPUlMucHVycGxlLAogICAgICAgIENIQVJUX0NPTE9SUy5ncmV5LAogICAgICBdCgogICAgICBmZXRjaChgLi9kYXRhLmpzb24/dD0ke0RhdGUubm93KCl9YCkKICAgICAgICAudGhlbigocmVzcG9uc2UpID0+IHJlc3BvbnNlLm9rICYmIHJlc3BvbnNlLmpzb24oKSkKICAgICAgICAudGhlbigoanNvbikgPT4gewogICAgICAgICAgaWYgKCFqc29uKSB7CiAgICAgICAgICAgIHJldHVybgogICAgICAgICAgfQoKICAgICAgICAgIC8vIHRvZG86IHJlbW92ZQogICAgICAgICAgd2luZG93Ll9fanNvbiA9IGpzb24KICAgICAgICAgIGNvbnNvbGUubG9nKGpzb24pCgogICAgICAgICAganNvbi5mb3JFYWNoKChyZXBvcnRDb25maWcpID0+IHsKICAgICAgICAgICAgY29uc3QgZGl2ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnZGl2JykKICAgICAgICAgICAgZGl2LnNldEF0dHJpYnV0ZSgnZGF0YS10ZXN0aWQnLCByZXBvcnRDb25maWcubmFtZSkKCiAgICAgICAgICAgIGNvbnN0IGN0eCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2NhbnZhcycpCiAgICAgICAgICAgIGNvbnN0IGgyID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnaDInKQogICAgICAgICAgICBoMi5hcHBlbmRDaGlsZChkb2N1bWVudC5jcmVhdGVUZXh0Tm9kZShyZXBvcnRDb25maWcubmFtZSkpCiAgICAgICAgICAgIGNvbnN0IGxpbmsgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdhJykKICAgICAgICAgICAgbGluay5ocmVmID0gYCMke3JlcG9ydENvbmZpZy5uYW1lLnJlcGxhY2VBbGwoJyAnLCAnXycpfWAKICAgICAgICAgICAgbGluay5hcHBlbmRDaGlsZChkb2N1bWVudC5jcmVhdGVUZXh0Tm9kZSgnICMnKSkKICAgICAgICAgICAgaDIuYXBwZW5kQ2hpbGQobGluaykKICAgICAgICAgICAgZGl2LmFwcGVuZENoaWxkKGgyKQogICAgICAgICAgICBkaXYuYXBwZW5kQ2hpbGQoY3R4KQogICAgICAgICAgICBjaGFydHNSb290LmFwcGVuZENoaWxkKGRpdikKCiAgICAgICAgICAgIGNvbnN0IGRhdGFzZXRzID0gW10KICAgICAgICAgICAgZm9yIChsZXQgaWR4ID0gMDsgaWR4IDwgcmVwb3J0Q29uZmlnLmxpbmVzOyBpZHgrKykgewogICAgICAgICAgICAgIGNvbnN0IGRhdGEgPSBbXQogICAgICAgICAgICAgIGRhdGFzZXRzLnB1c2goewogICAgICAgICAgICAgICAgcmFkaXVzOiAxLAogICAgICAgICAgICAgICAgYm9yZGVyV2lkdGg6IDEsCiAgICAgICAgICAgICAgICBib3JkZXJDb2xvcjogTkFNRURfQ09MT1JTW2lkeF0sCiAgICAgICAgICAgICAgICBsYWJlbDogcmVwb3J0Q29uZmlnLmxhYmVsc1tpZHhdLAogICAgICAgICAgICAgICAgZGF0YSwKICAgICAgICAgICAgICB9KQoKICAgICAgICAgICAgICByZXBvcnRDb25maWcucmVjb3Jkcy5mb3JFYWNoKChyKSA9PiB7CiAgICAgICAgICAgICAgICAvLyByLm1ldGEgLy8gVE9ETyBzaG93IHJ1bklkIGFuZCBzaGEgaW4gdG9vbHRpcAogICAgICAgICAgICAgICAgaWYgKHIuZGF0YVtpZHhdKSB7CiAgICAgICAgICAgICAgICAgIGRhdGEucHVzaChyLmRhdGFbaWR4XSkKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICB9KQogICAgICAgICAgICB9CgogICAgICAgICAgICBuZXcgQ2hhcnQoY3R4LCB7CiAgICAgICAgICAgICAgdHlwZTogJ2xpbmUnLAogICAgICAgICAgICAgIGRhdGE6IHsKICAgICAgICAgICAgICAgIGRhdGFzZXRzLAogICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgb3B0aW9uczogewogICAgICAgICAgICAgICAgLy8gVHVybiBvZmYgYW5pbWF0aW9ucyBhbmQgZGF0YSBwYXJzaW5nIGZvciBwZXJmb3JtYW5jZQogICAgICAgICAgICAgICAgYW5pbWF0aW9uOiBmYWxzZSwKICAgICAgICAgICAgICAgIHBhcnNpbmc6IGZhbHNlLAoKICAgICAgICAgICAgICAgIGludGVyYWN0aW9uOiB7CiAgICAgICAgICAgICAgICAgIG1vZGU6ICduZWFyZXN0JywKICAgICAgICAgICAgICAgICAgYXhpczogJ3gnLAogICAgICAgICAgICAgICAgICBpbnRlcnNlY3Q6IGZhbHNlLAogICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgIHBsdWdpbnM6IHsKICAgICAgICAgICAgICAgICAgZGVjaW1hdGlvbjogeyBlbmFibGVkOiB0cnVlLCBhbGdvcml0aG06ICdsdHRiJywgc2FtcGxlczogNjAsIHRocmVzaG9sZDogNjAgfSwKICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICBzY2FsZXM6IHsKICAgICAgICAgICAgICAgICAgeDogewogICAgICAgICAgICAgICAgICAgIHR5cGU6ICd0aW1lJywKICAgICAgICAgICAgICAgICAgICB0aWNrczogewogICAgICAgICAgICAgICAgICAgICAgc291cmNlOiAnYXV0bycsCiAgICAgICAgICAgICAgICAgICAgICAvLyBEaXNhYmxlZCByb3RhdGlvbiBmb3IgcGVyZm9ybWFuY2UKICAgICAgICAgICAgICAgICAgICAgIG1heFJvdGF0aW9uOiAwLAogICAgICAgICAgICAgICAgICAgICAgYXV0b1NraXA6IHRydWUsCiAgICAgICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgfSkKICAgICAgICAgIH0pCiAgICAgICAgfSkKICAgIDwvc2NyaXB0PgogIDwvYm9keT4KPC9odG1sPgo=', 'base64');
+const chartReport = Buffer.from('PCEtLSByZXBvcnQtYWN0aW9uIC0tPgo8IWRvY3R5cGUgaHRtbD4KPGh0bWwgbGFuZz0iZW4iPgogIDxoZWFkPgogICAgPG1ldGEgY2hhcnNldD0iVVRGLTgiIC8+CiAgPC9oZWFkPgoKICA8Ym9keT4KICAgIDxtYWluIGlkPSJtYWluIj48L21haW4+CgogICAgPCEtLSBodHRwczovL2NkbmpzLmNvbS9saWJyYXJpZXMvQ2hhcnQuanMgLS0+CiAgICA8c2NyaXB0IHNyYz0iaHR0cHM6Ly9jZG5qcy5jbG91ZGZsYXJlLmNvbS9hamF4L2xpYnMvQ2hhcnQuanMvNC4zLjMvY2hhcnQudW1kLmpzIj48L3NjcmlwdD4KICAgIDwhLS0gaHR0cHM6Ly9naXRodWIuY29tL2NoYXJ0anMvY2hhcnRqcy1hZGFwdGVyLWRhdGUtZm5zIC0tPgogICAgPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vY2hhcnRqcy1hZGFwdGVyLWRhdGUtZm5zQDMuMC4wL2Rpc3QvY2hhcnRqcy1hZGFwdGVyLWRhdGUtZm5zLmJ1bmRsZS5taW4uanMiPjwvc2NyaXB0PgoKICAgIDxzY3JpcHQ+CiAgICAgIGNvbnN0IGNoYXJ0c1Jvb3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbWFpbicpCgogICAgICBjb25zdCBDSEFSVF9DT0xPUlMgPSB7CiAgICAgICAgcmVkOiAncmdiKDI1NSwgOTksIDEzMiknLAogICAgICAgIG9yYW5nZTogJ3JnYigyNTUsIDE1OSwgNjQpJywKICAgICAgICB5ZWxsb3c6ICdyZ2IoMjU1LCAyMDUsIDg2KScsCiAgICAgICAgZ3JlZW46ICdyZ2IoNzUsIDE5MiwgMTkyKScsCiAgICAgICAgYmx1ZTogJ3JnYig1NCwgMTYyLCAyMzUpJywKICAgICAgICBwdXJwbGU6ICdyZ2IoMTUzLCAxMDIsIDI1NSknLAogICAgICAgIGdyZXk6ICdyZ2IoMjAxLCAyMDMsIDIwNyknLAogICAgICB9CgogICAgICBjb25zdCBOQU1FRF9DT0xPUlMgPSBbCiAgICAgICAgQ0hBUlRfQ09MT1JTLnJlZCwKICAgICAgICBDSEFSVF9DT0xPUlMub3JhbmdlLAogICAgICAgIENIQVJUX0NPTE9SUy55ZWxsb3csCiAgICAgICAgQ0hBUlRfQ09MT1JTLmdyZWVuLAogICAgICAgIENIQVJUX0NPTE9SUy5ibHVlLAogICAgICAgIENIQVJUX0NPTE9SUy5wdXJwbGUsCiAgICAgICAgQ0hBUlRfQ09MT1JTLmdyZXksCiAgICAgIF0KCiAgICAgIGZldGNoKGAuL2RhdGEuanNvbj90PSR7RGF0ZS5ub3coKX1gKQogICAgICAgIC50aGVuKChyZXNwb25zZSkgPT4gcmVzcG9uc2Uub2sgJiYgcmVzcG9uc2UuanNvbigpKQogICAgICAgIC50aGVuKChqc29uKSA9PiB7CiAgICAgICAgICBpZiAoIWpzb24pIHsKICAgICAgICAgICAgcmV0dXJuCiAgICAgICAgICB9CgogICAgICAgICAgLy8gdG9kbzogcmVtb3ZlCiAgICAgICAgICB3aW5kb3cuX19qc29uID0ganNvbgogICAgICAgICAgY29uc29sZS5sb2coanNvbikKCiAgICAgICAgICBqc29uLmZvckVhY2goKHJlcG9ydENvbmZpZykgPT4gewogICAgICAgICAgICBjb25zdCBkaXYgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdkaXYnKQogICAgICAgICAgICBkaXYuc2V0QXR0cmlidXRlKCdkYXRhLXRlc3RpZCcsIHJlcG9ydENvbmZpZy5uYW1lKQoKICAgICAgICAgICAgY29uc3QgY3R4ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnY2FudmFzJykKICAgICAgICAgICAgY29uc3QgaDIgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdoMicpCiAgICAgICAgICAgIGgyLmFwcGVuZENoaWxkKGRvY3VtZW50LmNyZWF0ZVRleHROb2RlKHJlcG9ydENvbmZpZy5uYW1lKSkKICAgICAgICAgICAgY29uc3QgbGluayA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2EnKQogICAgICAgICAgICBsaW5rLmhyZWYgPSBgIyR7cmVwb3J0Q29uZmlnLm5hbWUucmVwbGFjZUFsbCgnICcsICdfJyl9YAogICAgICAgICAgICBsaW5rLmFwcGVuZENoaWxkKGRvY3VtZW50LmNyZWF0ZVRleHROb2RlKCcgIycpKQogICAgICAgICAgICBoMi5hcHBlbmRDaGlsZChsaW5rKQogICAgICAgICAgICBkaXYuYXBwZW5kQ2hpbGQoaDIpCiAgICAgICAgICAgIGRpdi5hcHBlbmRDaGlsZChjdHgpCiAgICAgICAgICAgIGNoYXJ0c1Jvb3QuYXBwZW5kQ2hpbGQoZGl2KQoKICAgICAgICAgICAgY29uc3QgZGF0YXNldHMgPSBbXQogICAgICAgICAgICBmb3IgKGxldCBpZHggPSAwOyBpZHggPCByZXBvcnRDb25maWcubGluZXM7IGlkeCsrKSB7CiAgICAgICAgICAgICAgY29uc3QgZGF0YSA9IFtdCiAgICAgICAgICAgICAgZGF0YXNldHMucHVzaCh7CiAgICAgICAgICAgICAgICByYWRpdXM6IDEsCiAgICAgICAgICAgICAgICBib3JkZXJXaWR0aDogMSwKICAgICAgICAgICAgICAgIGJvcmRlckNvbG9yOiBOQU1FRF9DT0xPUlNbaWR4XSwKICAgICAgICAgICAgICAgIGxhYmVsOiByZXBvcnRDb25maWcubGFiZWxzW2lkeF0sCiAgICAgICAgICAgICAgICBkYXRhLAogICAgICAgICAgICAgIH0pCgogICAgICAgICAgICAgIHJlcG9ydENvbmZpZy5yZWNvcmRzLmZvckVhY2goKHIpID0+IHsKICAgICAgICAgICAgICAgIC8vIHIubWV0YSAvLyBUT0RPIHNob3cgcnVuSWQgYW5kIHNoYSBpbiB0b29sdGlwCiAgICAgICAgICAgICAgICBpZiAoci5kYXRhW2lkeF0pIHsKICAgICAgICAgICAgICAgICAgZGF0YS5wdXNoKHIuZGF0YVtpZHhdKQogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgIH0pCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIG5ldyBDaGFydChjdHgsIHsKICAgICAgICAgICAgICB0eXBlOiAnbGluZScsCiAgICAgICAgICAgICAgZGF0YTogewogICAgICAgICAgICAgICAgZGF0YXNldHMsCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICBvcHRpb25zOiB7CiAgICAgICAgICAgICAgICAvLyBUdXJuIG9mZiBhbmltYXRpb25zIGFuZCBkYXRhIHBhcnNpbmcgZm9yIHBlcmZvcm1hbmNlCiAgICAgICAgICAgICAgICBhbmltYXRpb246IGZhbHNlLAogICAgICAgICAgICAgICAgcGFyc2luZzogZmFsc2UsCgogICAgICAgICAgICAgICAgaW50ZXJhY3Rpb246IHsKICAgICAgICAgICAgICAgICAgbW9kZTogJ25lYXJlc3QnLAogICAgICAgICAgICAgICAgICBheGlzOiAneCcsCiAgICAgICAgICAgICAgICAgIGludGVyc2VjdDogZmFsc2UsCiAgICAgICAgICAgICAgICB9LAogICAgICAgICAgICAgICAgcGx1Z2luczogewogICAgICAgICAgICAgICAgICBkZWNpbWF0aW9uOiB7IGVuYWJsZWQ6IHRydWUsIGFsZ29yaXRobTogJ2x0dGInLCBzYW1wbGVzOiA2MCwgdGhyZXNob2xkOiA2MCB9LAogICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgIHNjYWxlczogewogICAgICAgICAgICAgICAgICB4OiB7CiAgICAgICAgICAgICAgICAgICAgdHlwZTogJ3RpbWUnLAogICAgICAgICAgICAgICAgICAgIHRpY2tzOiB7CiAgICAgICAgICAgICAgICAgICAgICBzb3VyY2U6ICdhdXRvJywKICAgICAgICAgICAgICAgICAgICAgIC8vIERpc2FibGVkIHJvdGF0aW9uIGZvciBwZXJmb3JtYW5jZQogICAgICAgICAgICAgICAgICAgICAgbWF4Um90YXRpb246IDAsCiAgICAgICAgICAgICAgICAgICAgICBhdXRvU2tpcDogdHJ1ZSwKICAgICAgICAgICAgICAgICAgICB9LAogICAgICAgICAgICAgICAgICB9LAogICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICB9LAogICAgICAgICAgICB9KQogICAgICAgICAgfSkKICAgICAgICB9KQogICAgPC9zY3JpcHQ+CiAgPC9ib2R5Pgo8L2h0bWw+Cg==', 'base64');
 
 ;// CONCATENATED MODULE: ./src/csvReport.ts
 
@@ -19470,6 +19493,9 @@ const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
     }
     const filesContent = [];
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
+        if (!(await (0,isFileExists/* isFileExist */.e)(sourceReportDir))) {
+            throw new Error('report_dir input treated as a file and it cannot be found: ' + sourceReportDir);
+        }
         const json = await v2_default()().fromFile(sourceReportDir);
         filesContent.push({ name: external_path_.basename(sourceReportDir, external_path_.extname(sourceReportDir)), json });
     }
@@ -19531,6 +19557,20 @@ const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
 
 /***/ }),
 
+/***/ 3015:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "L": () => (/* binding */ getBranchName)
+/* harmony export */ });
+const getBranchName = (gitRef, pull_request) => {
+    const branchName = pull_request ? pull_request.head.ref : gitRef.replace('refs/heads/', '');
+    return branchName.replaceAll('/', '_').replaceAll('.', '_');
+};
+
+
+/***/ }),
+
 /***/ 2139:
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
@@ -19559,6 +19599,7 @@ const isFileExist = async (filePath) => {
 
 // EXPORTS
 __nccwpck_require__.d(__webpack_exports__, {
+  "z": () => (/* binding */ shouldWriteRootHtml),
   "l": () => (/* binding */ writeFolderListing)
 });
 
@@ -19566,11 +19607,15 @@ __nccwpck_require__.d(__webpack_exports__, {
 var promises_ = __nccwpck_require__(3292);
 ;// CONCATENATED MODULE: ./src/report_listing.ts
 // autogenerated
-const listingReport = Buffer.from('PCEtLSBodG1sLXRyZW5kLXJlcG9ydC1hY3Rpb24gLS0+CjwhZG9jdHlwZSBodG1sPgo8aHRtbCBsYW5nPSJlbiI+CiAgPGhlYWQ+CiAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCIgLz4KICA8L2hlYWQ+CgogIDxib2R5PgogICAgPGRpdiBpZD0iYXBwIj4KICAgICAgPHRhYmxlIGlkPSJsaXN0LXRhYmxlIj4KICAgICAgICA8dGhlYWQ+CiAgICAgICAgICA8dGg+S2V5PC90aD4KICAgICAgICAgIDx0aD5WYWx1ZTwvdGg+CiAgICAgICAgPC90aGVhZD4KICAgICAgICA8dGJvZHk+PC90Ym9keT4KICAgICAgICA8dGZvb3Q+PC90Zm9vdD4KICAgICAgPC90YWJsZT4KICAgICAgPHVsIGlkPSJsaW5rcyI+PC91bD4KICAgIDwvZGl2PgoKICAgIDxzY3JpcHQ+CiAgICAgIGNvbnN0IGNyZWF0ZVRyID0gKGRhdGEsIGNlbGxUeXBlID0gJ3RkJykgPT4gewogICAgICAgIGNvbnN0IHJvdyA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3RyJykKCiAgICAgICAgZGF0YS5mb3JFYWNoKCh2KSA9PiB7CiAgICAgICAgICBjb25zdCBjZWxsID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChjZWxsVHlwZSkKICAgICAgICAgIGNlbGwuYXBwZW5kQ2hpbGQoZG9jdW1lbnQuY3JlYXRlVGV4dE5vZGUodikpCiAgICAgICAgICByb3cuYXBwZW5kQ2hpbGQoY2VsbCkKICAgICAgICB9KQoKICAgICAgICByZXR1cm4gcm93CiAgICAgIH0KCiAgICAgIGNvbnN0IGxpbmtzTGlzdCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdsaW5rcycpCiAgICAgIGNvbnN0IHRhYmxlID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2xpc3QtdGFibGUnKQogICAgICBjb25zdCB0YWJsZUJvZHkgPSB0YWJsZS5nZXRFbGVtZW50c0J5VGFnTmFtZSgndGJvZHknKVswXQoKICAgICAgZmV0Y2goYC4vZGF0YS5qc29uP3Q9JHtEYXRlLm5vdygpfWApCiAgICAgICAgLnRoZW4oKHJlc3BvbnNlKSA9PiByZXNwb25zZS5vayAmJiByZXNwb25zZS5qc29uKCkpCiAgICAgICAgLnRoZW4oKGpzb24pID0+IHsKICAgICAgICAgIGlmICghanNvbikgewogICAgICAgICAgICByZXR1cm4KICAgICAgICAgIH0KCiAgICAgICAgICBqc29uLmxpbmtzLmZvckVhY2goKHJlY29yZCkgPT4gewogICAgICAgICAgICBjb25zdCBsaW5rID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnYScpCiAgICAgICAgICAgIGxpbmsuYXBwZW5kQ2hpbGQoZG9jdW1lbnQuY3JlYXRlVGV4dE5vZGUocmVjb3JkKSkKICAgICAgICAgICAgbGluay5ocmVmID0gcmVjb3JkCiAgICAgICAgICAgIGNvbnN0IGxpID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnbGknKQogICAgICAgICAgICBsaS5hcHBlbmRDaGlsZChsaW5rKQogICAgICAgICAgICBsaW5rc0xpc3QuYXBwZW5kQ2hpbGQobGkpCiAgICAgICAgICB9KQogICAgICAgICAgZGVsZXRlIGpzb24ubGlua3MKCiAgICAgICAgICBpZiAoT2JqZWN0LmtleXMoanNvbikubGVuZ3RoID09PSAwKSB7CiAgICAgICAgICAgIHRhYmxlLnJlbW92ZSgpCiAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICBPYmplY3QuZW50cmllcyhqc29uKS5mb3JFYWNoKChyZWNvcmQpID0+IHsKICAgICAgICAgICAgICB0YWJsZUJvZHkuYXBwZW5kQ2hpbGQoY3JlYXRlVHIocmVjb3JkKSkKICAgICAgICAgICAgfSkKICAgICAgICAgIH0KICAgICAgICB9KQogICAgPC9zY3JpcHQ+CiAgPC9ib2R5Pgo8L2h0bWw+Cg==', 'base64');
+const listingReport = Buffer.from('PCEtLSByZXBvcnQtYWN0aW9uIC0tPgo8IWRvY3R5cGUgaHRtbD4KPGh0bWwgbGFuZz0iZW4iPgogIDxoZWFkPgogICAgPG1ldGEgY2hhcnNldD0iVVRGLTgiIC8+CiAgPC9oZWFkPgoKICA8Ym9keT4KICAgIDxkaXYgaWQ9ImFwcCI+CiAgICAgIDx1bCBpZD0ibGlua3MiPjwvdWw+CiAgICA8L2Rpdj4KCiAgICA8c2NyaXB0PgogICAgICBjb25zdCBsaW5rc0xpc3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbGlua3MnKQoKICAgICAgZmV0Y2goYC4vZGF0YS5qc29uP3Q9JHtEYXRlLm5vdygpfWApCiAgICAgICAgLnRoZW4oKHJlc3BvbnNlKSA9PiByZXNwb25zZS5vayAmJiByZXNwb25zZS5qc29uKCkpCiAgICAgICAgLnRoZW4oKGpzb24pID0+IHsKICAgICAgICAgIGlmICghanNvbikgewogICAgICAgICAgICByZXR1cm4KICAgICAgICAgIH0KCiAgICAgICAgICBqc29uLmxpbmtzLmZvckVhY2goKHJlY29yZCkgPT4gewogICAgICAgICAgICBjb25zdCBsaW5rID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnYScpCiAgICAgICAgICAgIGxpbmsuYXBwZW5kQ2hpbGQoZG9jdW1lbnQuY3JlYXRlVGV4dE5vZGUocmVjb3JkKSkKICAgICAgICAgICAgbGluay5ocmVmID0gcmVjb3JkCiAgICAgICAgICAgIGNvbnN0IGxpID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnbGknKQogICAgICAgICAgICBsaS5hcHBlbmRDaGlsZChsaW5rKQogICAgICAgICAgICBsaW5rc0xpc3QuYXBwZW5kQ2hpbGQobGkpCiAgICAgICAgICB9KQogICAgICAgICAgZGVsZXRlIGpzb24ubGlua3MKICAgICAgICB9KQogICAgPC9zY3JpcHQ+CiAgPC9ib2R5Pgo8L2h0bWw+Cg==', 'base64');
 
+// EXTERNAL MODULE: ./src/isFileExists.ts
+var isFileExists = __nccwpck_require__(2139);
 ;// CONCATENATED MODULE: ./src/writeFolderListing.ts
 
 
+
+const indexHtmlFirstLine = '<!-- report-action -->';
 const writeFolderListing = async (ghPagesPath, relPath) => {
     const isRoot = relPath === '.';
     const fullPath = isRoot ? ghPagesPath : `${ghPagesPath}/${relPath}`;
@@ -19582,14 +19627,25 @@ const writeFolderListing = async (ghPagesPath, relPath) => {
         .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
         .map((d) => d.name);
     links.push(...listdir);
-    const data = {
-        links,
-    };
-    if (!isRoot) {
-        data.date = new Date().toISOString();
-    }
+    const data = { links };
     await promises_.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
     await promises_.writeFile(`${fullPath}/index.html`, listingReport);
+};
+const shouldWriteRootHtml = async (ghPagesPath) => {
+    // do noot overwrite index.html in the folder root to avoid conflicts
+    const rootHtmlPath = `${ghPagesPath}/index.html`;
+    const isRootHtmlExisting = await (0,isFileExists/* isFileExist */.e)(rootHtmlPath);
+    // write index.html in the folder root if it doesn't exist
+    if (!isRootHtmlExisting) {
+        return true;
+    }
+    // overwrite index.html in the folder root if it was created with the Github Action
+    const rootHtmlFirstLine = (await promises_.readFile(rootHtmlPath)).toString('utf-8').split('\n')[0];
+    if (rootHtmlFirstLine === indexHtmlFirstLine) {
+        return true;
+    }
+    // do not overwrite index.html in the folder root to avoid conflicts
+    return false;
 };
 
 
