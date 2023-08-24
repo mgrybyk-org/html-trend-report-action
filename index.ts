@@ -3,38 +3,61 @@ import * as github from '@actions/github'
 import * as io from '@actions/io'
 import { csvReport } from './src/csvReport.js'
 import { isFileExist } from './src/isFileExists.js'
-import { writeFolderListing } from './src/writeFolderListing.js'
+import { shouldWriteRootHtml, writeFolderListing } from './src/writeFolderListing.js'
+import { getBranchName } from './src/helpers.js'
 
-const baseDir = 'html-trend-report-action'
-const getBranchName = (gitRef: string) => gitRef.replace('refs/heads/', '')
+const baseDir = 'report-action'
 
 try {
+    const runTimestamp = Date.now()
+
     // vars
     const sourceReportDir = core.getInput('report_dir')
     const ghPagesPath = core.getInput('gh_pages')
     const reportId = core.getInput('report_id')
     const reportType = core.getInput('report_type')
-    // const isAllure = core.getInput('isAllure') === 'true'
+    const listDirs = core.getInput('list_dirs') == 'true'
     const branchName = getBranchName(github.context.ref)
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`
-    const reportDir = `${reportBaseDir}/${github.context.runId}`
+
+    /**
+     * `runId` is unique but won't change on job re-run
+     * `runNumber` is not unique and resets from time to time
+     * that's why the `runTimestamp` is used to guarantee uniqueness
+     */
+    const runUniqueId = `${github.context.runId}_${runTimestamp}`
+    const reportDir = `${reportBaseDir}/${runUniqueId}`
+
+    // urls
+    const ghPagesUrl = `https://${github.context.repo.owner}.github.io/${github.context.repo.repo}`
+    const ghPagesBaseDir = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`
+    const ghPagesReportDir = `${ghPagesBaseDir}/${runUniqueId}`
 
     // log
-    console.table({ ghPagesPath, sourceReportDir, reportId, branchName, reportBaseDir, reportDir, gitref: github.context.ref })
-    // context
-    const toLog = { ...github.context } as Record<string, unknown>
-    delete toLog.payload
-    console.log('toLog', toLog)
+    console.log({
+        report_dir: sourceReportDir,
+        gh_pages: ghPagesPath,
+        report_id: reportId,
+        runUniqueId,
+        ref: github.context.ref,
+        repo: github.context.repo,
+        branchName,
+        reportBaseDir,
+        reportDir,
+        report_url: ghPagesReportDir,
+        listDirs,
+    })
+
+    if (!(await isFileExist(ghPagesPath))) {
+        throw new Error("Folder with gh-pages branch doesn't exist: " + ghPagesPath)
+    }
+
+    if (!['html', 'csv'].includes(reportType)) {
+        throw new Error('Unsupported report type: ' + reportType)
+    }
 
     // action
     await io.mkdirP(reportBaseDir)
-
-    // folder listing
-    // do noot overwrite index.html in the folder root to avoid conflicts
-    if (!(await isFileExist(`${ghPagesPath}/index.html`))) {
-        await writeFolderListing(ghPagesPath, '.')
-    }
-    await writeFolderListing(ghPagesPath, baseDir)
 
     // process report
     if (reportType === 'html') {
@@ -45,11 +68,20 @@ try {
     } else if (reportType === 'csv') {
         await csvReport(sourceReportDir, reportBaseDir, {
             sha: github.context.sha,
-            runId: github.context.runId,
         })
-    } else {
-        throw new Error('Unsupported report type: ' + reportType)
     }
+
+    // folder listing
+    if (listDirs) {
+        if (await shouldWriteRootHtml(ghPagesPath)) {
+            await writeFolderListing(ghPagesPath, '.')
+        }
+        await writeFolderListing(ghPagesPath, baseDir)
+    }
+
+    // outputs
+    core.setOutput('report_url', ghPagesReportDir)
+    core.setOutput('report_history_url', ghPagesBaseDir)
 } catch (error) {
     core.setFailed(error.message)
 }
