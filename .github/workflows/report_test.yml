@@ -67,6 +67,7 @@ jobs:
           report_id: 'self-test'
           gh_pages: 'gh-pages-dir'
           report_dir: 'allure-results'
+          list_dirs: ${{ github.ref == 'refs/heads/main' }}
 
       - name: generate html report data
         if: always()
@@ -90,6 +91,7 @@ jobs:
           report_id: 'html-report-1'
           gh_pages: 'gh-pages-dir'
           report_dir: 'test/html'
+          list_dirs: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Local Chart Report
         if: ${{ always() && steps.allure.outputs.report_url }}
@@ -98,7 +100,7 @@ jobs:
           report_id: 'chart-report-2'
           gh_pages: 'gh-pages-dir'
           report_dir: 'test/Allure_Trend.csv'
-          list_dirs: true
+          list_dirs: ${{ github.ref == 'refs/heads/main' }}
           report_type: csv
 
       - name: Git Commit and Push Action
