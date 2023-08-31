@@ -30,8 +30,8 @@ try {
 
     // urls
     const ghPagesUrl = `https://${github.context.repo.owner}.github.io/${github.context.repo.repo}`
-    const ghPagesBaseDir = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`
-    const ghPagesReportDir = `${ghPagesBaseDir}/${runUniqueId}`
+    const ghPagesBaseDir = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`.replaceAll(' ', '%20')
+    const ghPagesReportDir = `${ghPagesBaseDir}/${runUniqueId}`.replaceAll(' ', '%20')
 
     // log
     console.log({
@@ -63,7 +63,7 @@ try {
     if (reportType === 'html') {
         await io.cp(sourceReportDir, reportDir, { recursive: true })
     } else if (reportType === 'csv') {
-        await csvReport(sourceReportDir, reportBaseDir, {
+        await csvReport(sourceReportDir, reportBaseDir, reportId, {
             sha: github.context.sha,
         })
     }

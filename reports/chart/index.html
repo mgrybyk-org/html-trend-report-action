@@ -3,6 +3,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <title>Chart</title>
   </head>
 
   <body>
@@ -43,11 +44,9 @@
             return
           }
 
-          // todo: remove
-          window.__json = json
-          console.log(json)
+          document.title = json.title
 
-          json.forEach((reportConfig) => {
+          json.data.forEach((reportConfig) => {
             const div = document.createElement('div')
             div.setAttribute('data-testid', reportConfig.name)
 

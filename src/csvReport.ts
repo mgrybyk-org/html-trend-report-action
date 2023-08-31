@@ -6,15 +6,21 @@ import { chartReport } from './report_chart.js'
 
 const csvExt = '.csv'
 
-export const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: Record<string, string | number>) => {
+export const csvReport = async (
+    sourceReportDir: string,
+    reportBaseDir: string,
+    reportId: string,
+    meta: Record<string, string | number>
+) => {
     const dataFile = `${reportBaseDir}/data.json`
-    let dataJson: Array<CsvDataJson>
+    let csvJson: CsvJson
 
     if (await isFileExist(dataFile)) {
-        dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
+        csvJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
     } else {
-        dataJson = []
+        csvJson = { data: [], title: reportId }
     }
+    const dataJson = csvJson.data
 
     if (!(await isFileExist(sourceReportDir))) {
         throw new Error('report_dir cannot be found: ' + sourceReportDir)
@@ -84,6 +90,6 @@ export const csvReport = async (sourceReportDir: string, reportBaseDir: string, 
             entry.records.push(record)
         })
 
-    await fs.writeFile(dataFile, JSON.stringify(dataJson, null, 2))
+    await fs.writeFile(dataFile, JSON.stringify(csvJson, null, 2))
     await fs.writeFile(`${reportBaseDir}/index.html`, chartReport)
 }

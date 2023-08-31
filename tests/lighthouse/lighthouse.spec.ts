@@ -16,8 +16,8 @@ const htmlReportDir = path.join(process.cwd(), process.env.LH_REPORT_DIR || 'lig
 const htmlFilePath = path.join(htmlReportDir, 'index.html')
 
 const lighthousePages = [
-    { name: 'Chart', url: '/chart' },
-    { name: 'Folder Listing', url: '/html' },
+    { name: 'Chart', url: '/chart/' },
+    { name: 'Folder Listing', url: '/html/' },
 ]
 
 lighthousePages.forEach(({ name, url }) => {

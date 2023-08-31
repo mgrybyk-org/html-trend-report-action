@@ -12,3 +12,8 @@ interface CsvDataJson {
     lines: number
     records: Array<CsvDataRecords>
 }
+
+interface CsvJson {
+    title: string
+    data: CsvDataJson[]
+}
