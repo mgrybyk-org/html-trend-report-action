@@ -120,10 +120,7 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            1: ${{ steps.allure.outputs.report_url && '${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})' }}
-            2: ${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})
-            [HTML Report](${{ steps.html-1.outputs.report_url }}) | [HTML Report History](${{ steps.html-1.outputs.report_history_url }})
-            [Chart Report](${{ steps.chart-2.outputs.report_url }})
+            [HTML Report](${{ steps.html-1.outputs.report_url }}) | [Chart Report](${{ steps.chart-2.outputs.report_url }})
             ${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})
           comment_tag: allure_self_test
           mode: recreate
