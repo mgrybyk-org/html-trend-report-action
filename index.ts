@@ -76,7 +76,7 @@ try {
         await writeFolderListing(ghPagesPath, baseDir)
         await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
         if (reportType === 'html') {
-            await writeFolderListing(ghPagesPath, reportBaseDir)
+            await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}/${reportId}`)
         }
     }
 
