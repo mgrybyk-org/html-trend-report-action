@@ -19388,7 +19388,7 @@ try {
     const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_id');
     const reportType = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_type');
     const listDirs = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('list_dirs') == 'true';
-    const branchName = (0,_src_helpers_js__WEBPACK_IMPORTED_MODULE_6__/* .getBranchName */ .L)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref);
+    const branchName = (0,_src_helpers_js__WEBPACK_IMPORTED_MODULE_6__/* .getBranchName */ .L)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.payload.pull_request);
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`;
     /**
      * `runId` is unique but won't change on job re-run

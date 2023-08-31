@@ -17,7 +17,7 @@ try {
     const reportId = core.getInput('report_id')
     const reportType = core.getInput('report_type')
     const listDirs = core.getInput('list_dirs') == 'true'
-    const branchName = getBranchName(github.context.ref)
+    const branchName = getBranchName(github.context.ref, github.context.payload.pull_request)
     const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`
 
     /**
