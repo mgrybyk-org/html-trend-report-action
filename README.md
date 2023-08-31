@@ -7,8 +7,8 @@ Implementation of Jenkins [Plot](https://plugins.jenkins.io/plot/) and [HTML Pub
 
 See examples:
 
-- [CSV based report 1](https://mgrybyk.github.io/html-trend-report-action/report-action/main/chart-report-2/)
-- [CSV based report 2](https://mgrybyk.github.io/html-trend-report-action/report-action/main/chart-report-2/)
+- [CSV report, single file, Allure Trend](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Allure%20Trend%20Report/)
+- [CSV report, multiple files, Lighthouse Trend](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Trend%20Report/)
 - [HTML Report](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/6042081675_1693513388852/)
 - [HTML Report history](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/)
 - [Browser different branches](https://mgrybyk.github.io/html-trend-report-action/)
