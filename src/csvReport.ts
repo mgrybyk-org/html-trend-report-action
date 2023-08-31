@@ -30,9 +30,9 @@ export const csvReport = async (
         const json = await csvtojson().fromFile(sourceReportDir)
         filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
     } else {
-        const csvFiles = (await fs.readdir(sourceReportDir, { withFileTypes: true })).filter(
-            (f) => f.isFile() && path.extname(f.name) === csvExt
-        )
+        const csvFiles = (await fs.readdir(sourceReportDir, { withFileTypes: true }))
+            .filter((f) => f.isFile() && path.extname(f.name) === csvExt)
+            .sort((a, b) => a.name.localeCompare(b.name))
 
         for (const csvFile of csvFiles) {
             const json = await csvtojson().fromFile(path.join(sourceReportDir, csvFile.name))

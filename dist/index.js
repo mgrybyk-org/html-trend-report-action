@@ -19504,7 +19504,9 @@ const csvReport = async (sourceReportDir, reportBaseDir, reportId, meta) => {
         filesContent.push({ name: external_path_.basename(sourceReportDir, external_path_.extname(sourceReportDir)), json });
     }
     else {
-        const csvFiles = (await promises_.readdir(sourceReportDir, { withFileTypes: true })).filter((f) => f.isFile() && external_path_.extname(f.name) === csvExt);
+        const csvFiles = (await promises_.readdir(sourceReportDir, { withFileTypes: true }))
+            .filter((f) => f.isFile() && external_path_.extname(f.name) === csvExt)
+            .sort((a, b) => a.name.localeCompare(b.name));
         for (const csvFile of csvFiles) {
             const json = await v2_default()().fromFile(external_path_.join(sourceReportDir, csvFile.name));
             filesContent.push({ name: external_path_.basename(csvFile.name, csvExt), json });
