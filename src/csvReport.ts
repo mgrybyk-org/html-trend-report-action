@@ -4,6 +4,8 @@ import csvtojson from 'csvtojson'
 import { isFileExist } from './isFileExists.js'
 import { chartReport } from './report_chart.js'
 
+const csvExt = '.csv'
+
 export const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: Record<string, string | number>) => {
     const dataFile = `${reportBaseDir}/data.json`
     let dataJson: Array<CsvDataJson>
@@ -14,15 +16,22 @@ export const csvReport = async (sourceReportDir: string, reportBaseDir: string, 
         dataJson = []
     }
 
+    if (!(await isFileExist(sourceReportDir))) {
+        throw new Error('report_dir cannot be found: ' + sourceReportDir)
+    }
     const filesContent: Array<{ name: string; json: Array<Record<string, string | number>> }> = []
-    if (sourceReportDir.toLowerCase().endsWith('.csv')) {
-        if (!(await isFileExist(sourceReportDir))) {
-            throw new Error('report_dir input treated as a file and it cannot be found: ' + sourceReportDir)
-        }
+    if (sourceReportDir.toLowerCase().endsWith(csvExt)) {
         const json = await csvtojson().fromFile(sourceReportDir)
         filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
     } else {
-        // TODO glob
+        const csvFiles = (await fs.readdir(sourceReportDir, { withFileTypes: true })).filter(
+            (f) => f.isFile() && path.extname(f.name) === csvExt
+        )
+
+        for (const csvFile of csvFiles) {
+            const json = await csvtojson().fromFile(path.join(sourceReportDir, csvFile.name))
+            filesContent.push({ name: path.basename(csvFile.name, csvExt), json })
+        }
     }
 
     const x = Date.now()

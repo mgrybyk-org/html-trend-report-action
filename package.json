@@ -13,6 +13,7 @@
     "checks": "run-s check:*",
     "postinstall": "npm run generate_reports",
     "e2e": "playwright test",
+    "lighthouse": "playwright test -c playwright.lighthouse.config.ts",
     "prepare": "husky install"
   },
   "keywords": [
@@ -48,7 +49,10 @@
     "eslint-plugin-prettier": "^5.0.0",
     "http-server": "^14.1.1",
     "husky": "^8.0.3",
+    "lighthouse": "^11.0.0",
+    "lighthouse-reporting": "^1.6.1",
     "npm-run-all": "^4.1.5",
+    "playwright-lighthouse": "^3.1.0",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2"
   }

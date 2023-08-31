@@ -19484,6 +19484,7 @@ const chartReport = Buffer.from('PCEtLSByZXBvcnQtYWN0aW9uIC0tPgo8IWRvY3R5cGUgaHR
 
 
 
+const csvExt = '.csv';
 const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
     const dataFile = `${reportBaseDir}/data.json`;
     let dataJson;
@@ -19493,16 +19494,20 @@ const csvReport = async (sourceReportDir, reportBaseDir, meta) => {
     else {
         dataJson = [];
     }
+    if (!(await (0,isFileExists/* isFileExist */.e)(sourceReportDir))) {
+        throw new Error('report_dir cannot be found: ' + sourceReportDir);
+    }
     const filesContent = [];
-    if (sourceReportDir.toLowerCase().endsWith('.csv')) {
-        if (!(await (0,isFileExists/* isFileExist */.e)(sourceReportDir))) {
-            throw new Error('report_dir input treated as a file and it cannot be found: ' + sourceReportDir);
-        }
+    if (sourceReportDir.toLowerCase().endsWith(csvExt)) {
         const json = await v2_default()().fromFile(sourceReportDir);
         filesContent.push({ name: external_path_.basename(sourceReportDir, external_path_.extname(sourceReportDir)), json });
     }
     else {
-        // TODO glob
+        const csvFiles = (await promises_.readdir(sourceReportDir, { withFileTypes: true })).filter((f) => f.isFile() && external_path_.extname(f.name) === csvExt);
+        for (const csvFile of csvFiles) {
+            const json = await v2_default()().fromFile(external_path_.join(sourceReportDir, csvFile.name));
+            filesContent.push({ name: external_path_.basename(csvFile.name, csvExt), json });
+        }
     }
     const x = Date.now();
     filesContent
