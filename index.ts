@@ -62,9 +62,6 @@ try {
     // process report
     if (reportType === 'html') {
         await io.cp(sourceReportDir, reportDir, { recursive: true })
-
-        // folder listing
-        await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
     } else if (reportType === 'csv') {
         await csvReport(sourceReportDir, reportBaseDir, {
             sha: github.context.sha,
@@ -77,6 +74,10 @@ try {
             await writeFolderListing(ghPagesPath, '.')
         }
         await writeFolderListing(ghPagesPath, baseDir)
+        await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
+        if (reportType === 'html') {
+            await writeFolderListing(ghPagesPath, reportBaseDir)
+        }
     }
 
     // outputs

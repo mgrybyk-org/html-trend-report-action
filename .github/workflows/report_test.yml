@@ -87,6 +87,7 @@ jobs:
       - name: Local HTML Report
         if: always()
         uses: ./ # Uses an action in the root directory
+        id: html-1
         with:
           report_id: 'html-report-1'
           gh_pages: 'gh-pages-dir'
@@ -96,6 +97,7 @@ jobs:
       - name: Local Chart Report
         if: ${{ always() && steps.allure.outputs.report_url }}
         uses: ./
+        id: chart-2
         with:
           report_id: 'chart-report-2'
           gh_pages: 'gh-pages-dir'
@@ -109,3 +111,17 @@ jobs:
         with:
           repository: gh-pages-dir
           branch: gh-pages
+
+      - name: Comment PR with Allure Report link
+        if: ${{ always() && github.event_name == 'pull_request' && (steps.allure.outputs.report_url || steps.html-1.outputs.report_url || steps.chart-2.outputs.report_url) }}
+        continue-on-error: true
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            1: ${{ steps.allure.outputs.report_url && '${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})' }}
+            2: ${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})
+            [HTML Report](${{ steps.html-1.outputs.report_url }}) | [HTML Report History](${{ steps.html-1.outputs.report_history_url }})
+            [Chart Report](${{ steps.chart-2.outputs.report_url }})
+            ${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})
+          comment_tag: allure_self_test
+          mode: recreate

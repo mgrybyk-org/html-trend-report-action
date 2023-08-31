@@ -9,7 +9,7 @@ See examples:
 
 - [CSV based report](https://mgrybyk.github.io/html-trend-report-action/report-action/main/chart-report-2/)
 - [HTML Report](https://mgrybyk.github.io/html-trend-report-action/report-action/main/html-report-1/5964862780_1692886305532/)
-  [HTML Report history](https://mgrybyk.github.io/html-trend-report-action/report-action/main/html-report-1/)
+- [HTML Report history](https://mgrybyk.github.io/html-trend-report-action/report-action/main/html-report-1/)
 - [Browser different branches](https://mgrybyk.github.io/html-trend-report-action/)
 - [Pull Request Comment Example](todo)
 

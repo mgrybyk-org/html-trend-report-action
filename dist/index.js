@@ -19426,8 +19426,6 @@ try {
     // process report
     if (reportType === 'html') {
         await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
-        // folder listing
-        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, `${baseDir}/${branchName}`);
     }
     else if (reportType === 'csv') {
         await (0,_src_csvReport_js__WEBPACK_IMPORTED_MODULE_3__/* .csvReport */ .K)(sourceReportDir, reportBaseDir, {
@@ -19440,6 +19438,10 @@ try {
             await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, '.');
         }
         await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, baseDir);
+        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, `${baseDir}/${branchName}`);
+        if (reportType === 'html') {
+            await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, reportBaseDir);
+        }
     }
     // outputs
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_url', reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir);
