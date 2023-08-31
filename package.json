@@ -1,6 +1,6 @@
 {
   "name": "html-trend-report-action",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Publish html trend reports per branch",
   "main": "index.js",
   "type": "module",
