@@ -62,7 +62,7 @@
             h2.appendChild(link)
             div.appendChild(h2)
             div.appendChild(ctx)
-            chartsRoot.appendChild(div)
+            chartsRoot.prepend(div)
 
             const datasets = []
             for (let idx = 0; idx < reportConfig.lines; idx++) {
