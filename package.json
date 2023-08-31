@@ -1,7 +1,7 @@
 {
   "name": "html-trend-report-action",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "Publish html trend reports per branch",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -30,7 +30,7 @@
     "report"
   ],
   "author": "mgrybyk",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/github": "^5.1.1",

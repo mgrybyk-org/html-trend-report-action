@@ -7,11 +7,12 @@ Implementation of Jenkins [Plot](https://plugins.jenkins.io/plot/) and [HTML Pub
 
 See examples:
 
-- [CSV based report](https://mgrybyk.github.io/html-trend-report-action/report-action/main/chart-report-2/)
-- [HTML Report](https://mgrybyk.github.io/html-trend-report-action/report-action/main/html-report-1/5964862780_1692886305532/)
-- [HTML Report history](https://mgrybyk.github.io/html-trend-report-action/report-action/main/html-report-1/)
-- [Browser different branches](https://mgrybyk.github.io/html-trend-report-action/)
-- [Pull Request Comment Example](todo)
+- [CSV report, single file, Allure Trend](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Allure%20Trend%20Report/)
+- [CSV report, multiple files, Lighthouse Trend](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Trend%20Report/)
+- [HTML Report](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/6042081675_1693513388852/)
+- [HTML Report history](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/)
+- [Browse different branches](https://mgrybyk.github.io/html-trend-report-action/)
+- [Pull Request Comment Example](https://github.com/mgrybyk/html-trend-report-action/pull/2)
 
 *Compatible with [allure-report-branch-action](https://github.com/marketplace/actions/allure-report-with-history-per-branch). See [Allure History List](https://mgrybyk.github.io/html-trend-report-action/allure-action/main/self-test/)*
 
