@@ -4,25 +4,40 @@ import csvtojson from 'csvtojson'
 import { isFileExist } from './isFileExists.js'
 import { chartReport } from './report_chart.js'
 
-export const csvReport = async (sourceReportDir: string, reportBaseDir: string, meta: Record<string, string | number>) => {
+const csvExt = '.csv'
+
+export const csvReport = async (
+    sourceReportDir: string,
+    reportBaseDir: string,
+    reportId: string,
+    meta: Record<string, string | number>
+) => {
     const dataFile = `${reportBaseDir}/data.json`
-    let dataJson: Array<CsvDataJson>
+    let csvJson: CsvJson
 
     if (await isFileExist(dataFile)) {
-        dataJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
+        csvJson = JSON.parse((await fs.readFile(dataFile)).toString('utf-8'))
     } else {
-        dataJson = []
+        csvJson = { data: [], title: reportId }
     }
+    const dataJson = csvJson.data
 
+    if (!(await isFileExist(sourceReportDir))) {
+        throw new Error('report_dir cannot be found: ' + sourceReportDir)
+    }
     const filesContent: Array<{ name: string; json: Array<Record<string, string | number>> }> = []
-    if (sourceReportDir.toLowerCase().endsWith('.csv')) {
-        if (!(await isFileExist(sourceReportDir))) {
-            throw new Error('report_dir input treated as a file and it cannot be found: ' + sourceReportDir)
-        }
+    if (sourceReportDir.toLowerCase().endsWith(csvExt)) {
         const json = await csvtojson().fromFile(sourceReportDir)
         filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
     } else {
-        // TODO glob
+        const csvFiles = (await fs.readdir(sourceReportDir, { withFileTypes: true }))
+            .filter((f) => f.isFile() && path.extname(f.name) === csvExt)
+            .sort((a, b) => a.name.localeCompare(b.name))
+
+        for (const csvFile of csvFiles) {
+            const json = await csvtojson().fromFile(path.join(sourceReportDir, csvFile.name))
+            filesContent.push({ name: path.basename(csvFile.name, csvExt), json })
+        }
     }
 
     const x = Date.now()
@@ -75,6 +90,6 @@ export const csvReport = async (sourceReportDir: string, reportBaseDir: string, 
             entry.records.push(record)
         })
 
-    await fs.writeFile(dataFile, JSON.stringify(dataJson, null, 2))
+    await fs.writeFile(dataFile, JSON.stringify(csvJson, null, 2))
     await fs.writeFile(`${reportBaseDir}/index.html`, chartReport)
 }

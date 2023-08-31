@@ -1,12 +1,16 @@
 import { defineConfig, devices } from '@playwright/test'
 
+process.env.LH_REPORT_DIR = 'lighthouse-html'
+process.env.LH_CSV_REPORT_DIR = 'lighthouse-csv'
+process.env.LH_SCORES_DIR = 'lh-scores'
+
 const baseURL = 'http://127.0.0.1:3000'
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-    testDir: './tests/spec',
+    testDir: './tests/lighthouse',
     testMatch: '*.spec.ts',
     /* Run tests in files in parallel */
     fullyParallel: true,
@@ -17,14 +21,14 @@ export default defineConfig({
     /* Opt out of parallel tests on CI. */
     workers: process.env.CI ? 2 : undefined,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-    reporter: [['line'], ['allure-playwright']],
+    reporter: [['line']],
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         baseURL,
         acceptDownloads: false,
         trace: 'off',
         video: 'off',
-        screenshot: 'only-on-failure',
+        screenshot: 'off',
     },
 
     /* Configure projects for major browsers */
@@ -41,4 +45,6 @@ export default defineConfig({
         url: baseURL,
         reuseExistingServer: false,
     },
+    globalSetup: './tests/lighthouse/global-setup.ts',
+    globalTeardown: './tests/lighthouse/global-teardown.ts',
 })

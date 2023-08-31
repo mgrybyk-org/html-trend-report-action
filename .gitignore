@@ -1,11 +1,12 @@
 node_modules
 .DS_Store
 src/report_*.ts
-test/html/data.json
-test/*.csv
 allure-report
 allure-results
 /test-results/
 /playwright-report/
 /playwright/.cache/
 tests/**/*-darwin.png
+/lighthouse-html
+/lighthouse-csv
+/lh-scores

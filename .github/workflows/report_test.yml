@@ -37,6 +37,10 @@ jobs:
           [ $(git status -s -uno | wc -l | bc ) != "0" ] && exit 1 || echo OK
 
       - run: npx playwright install --with-deps chromium
+
+      - name: Lighthouse
+        run: npm run lighthouse
+
       - name: Update screenshots in PRs
         if: github.event_name == 'pull_request'
         run: npm run e2e -- --update-snapshots
@@ -47,10 +51,6 @@ jobs:
           branch: ${{ github.head_ref }}
           commit_message: Update screenshots
           add_args: 'tests/**/*.png'
-
-      - name: Do not update screenshots if not PR
-        if: github.event_name != 'pull_request'
-        run: npm run e2e
 
       - name: Checkout gh-pages
         uses: actions/checkout@v3
@@ -71,18 +71,11 @@ jobs:
           report_dir: 'allure-results'
           list_dirs: ${{ github.ref == 'refs/heads/main' }}
 
-      - name: generate html report data
-        if: always()
-        run: |
-          outFile=test/html/data.json
-          echo { > $outFile
-          echo "  \"github_run_id\": \"${{ github.run_id }}\"" >> $outFile
-          echo } >> $outFile
-
       - name: generate csv report data
         if: ${{ always() && steps.allure.outputs.report_url }}
         run: |
-          outFile=test/Allure_Trend.csv
+          mkdir -p test-results
+          outFile=test-results/Allure_Trend.csv
           echo Passed,Failed,Total > $outFile
           echo ${{ steps.allure.outputs.test_result_passed }},${{ steps.allure.outputs.test_result_failed }},${{ steps.allure.outputs.test_result_total }} >> $outFile
 
@@ -91,19 +84,30 @@ jobs:
         uses: ./ # Uses an action in the root directory
         id: html-1
         with:
-          report_id: 'html-report-1'
+          report_id: 'Lighthouse Report'
           gh_pages: 'gh-pages-dir'
-          report_dir: 'test/html'
+          report_dir: 'lighthouse-html'
           list_dirs: ${{ github.ref == 'refs/heads/main' }}
 
-      - name: Local Chart Report
+      - name: Local Chart Report (single)
         if: ${{ always() && steps.allure.outputs.report_url }}
         uses: ./
         id: chart-2
         with:
-          report_id: 'chart-report-2'
+          report_id: 'Allure Trend Report'
           gh_pages: 'gh-pages-dir'
-          report_dir: 'test/Allure_Trend.csv'
+          report_dir: 'test-results/Allure_Trend.csv'
+          list_dirs: ${{ github.ref == 'refs/heads/main' }}
+          report_type: csv
+
+      - name: Local Chart Report (multiple)
+        if: ${{ always() && steps.allure.outputs.report_url }}
+        uses: ./
+        id: chart-3
+        with:
+          report_id: 'Lighthouse Trend Report'
+          gh_pages: 'gh-pages-dir'
+          report_dir: 'lighthouse-csv'
           list_dirs: ${{ github.ref == 'refs/heads/main' }}
           report_type: csv
 
@@ -120,10 +124,8 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            1: ${{ steps.allure.outputs.report_url && '${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})' }}
-            2: ${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})
-            [HTML Report](${{ steps.html-1.outputs.report_url }}) | [HTML Report History](${{ steps.html-1.outputs.report_history_url }})
-            [Chart Report](${{ steps.chart-2.outputs.report_url }})
+            [HTML Report](${{ steps.html-1.outputs.report_url }}) | [Allure Trend (single csv)](${{ steps.chart-2.outputs.report_url }})
+            [Lighthouse Trend Report (mutliple csv)](${{ steps.chart-3.outputs.report_url }})
             ${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})
-          comment_tag: allure_self_test
+          comment_tag: test_reports
           mode: recreate
