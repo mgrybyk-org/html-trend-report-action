@@ -5,15 +5,30 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "http-server ./reports --port 3000",
     "generate_reports": "node prebuild.js",
     "build": "npm run generate_reports && ncc build index.ts --target es2021 --license licenses.txt",
-    "compile": "npm run generate_reports && tsc",
-    "lint": "eslint --ext .ts --ignore-path .gitignore .",
-    "precommit": "run-p compile lint",
-    "postinstall": "npm run generate_reports"
+    "check:compile": "npm run generate_reports && tsc",
+    "check:lint": "eslint --ext .ts --ignore-path .gitignore .",
+    "checks": "run-s check:*",
+    "postinstall": "npm run generate_reports",
+    "e2e": "playwright test",
+    "prepare": "husky install"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "github",
+    "action",
+    "publish",
+    "deploy",
+    "pages",
+    "html",
+    "csv",
+    "plot",
+    "history",
+    "trend",
+    "report"
+  ],
+  "author": "mgrybyk",
   "license": "ISC",
   "dependencies": {
     "@actions/core": "^1.10.0",
@@ -22,16 +37,19 @@
     "csvtojson": "^2.0.10"
   },
   "devDependencies": {
+    "@playwright/test": "^1.37.1",
     "@types/node": "^16.18.39",
-    "@typescript-eslint/eslint-plugin": "^6.3.0",
-    "@typescript-eslint/parser": "^6.3.0",
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
+    "@typescript-eslint/parser": "^6.5.0",
     "@vercel/ncc": "^0.36.1",
-    "eslint": "^8.46.0",
+    "allure-playwright": "^2.6.0",
+    "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "http-server": "^14.1.1",
     "husky": "^8.0.3",
     "npm-run-all": "^4.1.5",
-    "prettier": "^3.0.1",
-    "typescript": "^5.1.6"
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
   }
 }

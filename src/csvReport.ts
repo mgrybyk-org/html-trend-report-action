@@ -16,6 +16,9 @@ export const csvReport = async (sourceReportDir: string, reportBaseDir: string, 
 
     const filesContent: Array<{ name: string; json: Array<Record<string, string | number>> }> = []
     if (sourceReportDir.toLowerCase().endsWith('.csv')) {
+        if (!(await isFileExist(sourceReportDir))) {
+            throw new Error('report_dir input treated as a file and it cannot be found: ' + sourceReportDir)
+        }
         const json = await csvtojson().fromFile(sourceReportDir)
         filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
     } else {
