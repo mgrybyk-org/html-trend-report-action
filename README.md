@@ -12,7 +12,7 @@ See examples:
 - [HTML Report](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/6042081675_1693513388852/)
 - [HTML Report history](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/)
 - [Browse different branches](https://mgrybyk.github.io/html-trend-report-action/)
-- [Pull Request Comment Example](https://github.com/mgrybyk/html-trend-report-action/pull/2)
+- [Pull Request Comment Example](https://github.com/mgrybyk/html-trend-report-action/pull/3)
 
 *Compatible with [allure-report-branch-action](https://github.com/marketplace/actions/allure-report-with-history-per-branch). See [Allure History List](https://mgrybyk.github.io/html-trend-report-action/allure-action/main/self-test/)*
 
