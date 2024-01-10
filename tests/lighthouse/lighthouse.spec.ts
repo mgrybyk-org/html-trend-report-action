@@ -1,13 +1,6 @@
 import path from 'path'
 import { playAudit } from 'playwright-lighthouse'
-import {
-    playwrightLighthouseTest,
-    getScores,
-    writeCsvResult,
-    writeHtmlListEntryWithRetry,
-    LighthouseResult,
-    writeScoresToJson,
-} from 'lighthouse-reporting'
+import { playwrightLighthouseTest, getScores, writeCsvResult, writeHtmlListEntryWithRetry, writeScoresToJson } from 'lighthouse-reporting'
 
 playwrightLighthouseTest.setTimeout(60000)
 const lhScoresDir = path.join(process.cwd(), process.env.LH_SCORES_DIR || 'lh-scores')
@@ -27,7 +20,7 @@ lighthousePages.forEach(({ name, url }) => {
 
         context // let playwright initialize context
 
-        const result: LighthouseResult = await playAudit({
+        const result = await playAudit({
             url: baseURL + url,
             port,
             thresholds,
