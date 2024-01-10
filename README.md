@@ -1,6 +1,6 @@
 # html-trend-report-action
 
-Publish html trend reports per branch (type: `node16`)
+Publish html trend reports per branch (type: `node20`)
 
 Implementation of Jenkins [Plot](https://plugins.jenkins.io/plot/) and [HTML Publisher](https://plugins.jenkins.io/htmlpublisher/).
 
