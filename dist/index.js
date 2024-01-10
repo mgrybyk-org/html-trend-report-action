@@ -38614,6 +38614,7 @@ try {
     const ghPagesUrl = `https://${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner}.github.io/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo}`;
     const ghPagesBaseDir = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`.replaceAll(' ', '%20');
     const ghPagesReportDir = `${ghPagesBaseDir}/${runUniqueId}`.replaceAll(' ', '%20');
+    const reportUrl = reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir;
     // log
     console.log({
         report_dir: sourceReportDir,
@@ -38625,7 +38626,7 @@ try {
         branchName,
         reportBaseDir,
         reportDir,
-        report_url: ghPagesReportDir,
+        report_url: reportUrl,
         listDirs,
     });
     if (!(await (0,_src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__/* .isFileExist */ .e)(ghPagesPath))) {
@@ -38657,7 +38658,7 @@ try {
         }
     }
     // outputs
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_url', reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_url', reportUrl);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_history_url', ghPagesBaseDir);
 }
 catch (error) {

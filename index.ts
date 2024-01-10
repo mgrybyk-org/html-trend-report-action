@@ -33,6 +33,8 @@ try {
     const ghPagesBaseDir = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`.replaceAll(' ', '%20')
     const ghPagesReportDir = `${ghPagesBaseDir}/${runUniqueId}`.replaceAll(' ', '%20')
 
+    const reportUrl = reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir
+
     // log
     console.log({
         report_dir: sourceReportDir,
@@ -44,7 +46,7 @@ try {
         branchName,
         reportBaseDir,
         reportDir,
-        report_url: ghPagesReportDir,
+        report_url: reportUrl,
         listDirs,
     })
 
@@ -81,7 +83,7 @@ try {
     }
 
     // outputs
-    core.setOutput('report_url', reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir)
+    core.setOutput('report_url', reportUrl)
     core.setOutput('report_history_url', ghPagesBaseDir)
 } catch (error) {
     core.setFailed(error.message)
