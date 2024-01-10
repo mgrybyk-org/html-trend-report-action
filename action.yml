@@ -31,5 +31,5 @@ outputs:
   report_history_url:
     description: 'Published History list url'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
