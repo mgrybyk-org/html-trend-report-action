@@ -1,3 +1,4 @@
+import * as path from 'path'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as io from '@actions/io'
@@ -18,7 +19,7 @@ try {
     const reportType = core.getInput('report_type')
     const listDirs = core.getInput('list_dirs') == 'true'
     const branchName = getBranchName(github.context.ref, github.context.payload.pull_request)
-    const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`
+    const reportBaseDir = path.join(ghPagesPath, baseDir, branchName, reportId)
 
     /**
      * `runId` is unique but won't change on job re-run
@@ -26,7 +27,7 @@ try {
      * that's why the `runTimestamp` is used to guarantee uniqueness
      */
     const runUniqueId = `${github.context.runId}_${runTimestamp}`
-    const reportDir = `${reportBaseDir}/${runUniqueId}`
+    const reportDir = path.join(reportBaseDir, runUniqueId)
 
     // urls
     const ghPagesUrl = `https://${github.context.repo.owner}.github.io/${github.context.repo.repo}`
@@ -76,9 +77,9 @@ try {
             await writeFolderListing(ghPagesPath, '.')
         }
         await writeFolderListing(ghPagesPath, baseDir)
-        await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}`)
+        await writeFolderListing(ghPagesPath, path.join(baseDir, branchName))
         if (reportType === 'html') {
-            await writeFolderListing(ghPagesPath, `${baseDir}/${branchName}/${reportId}`)
+            await writeFolderListing(ghPagesPath, path.join(baseDir, branchName, reportId))
         }
     }
 

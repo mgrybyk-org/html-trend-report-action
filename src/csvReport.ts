@@ -12,7 +12,7 @@ export const csvReport = async (
     reportId: string,
     meta: Record<string, string | number>
 ) => {
-    const dataFile = `${reportBaseDir}/data.json`
+    const dataFile = path.join(reportBaseDir, 'data.json')
     let csvJson: CsvJson
 
     if (await isFileExist(dataFile)) {
@@ -91,5 +91,5 @@ export const csvReport = async (
         })
 
     await fs.writeFile(dataFile, JSON.stringify(csvJson, null, 2))
-    await fs.writeFile(`${reportBaseDir}/index.html`, chartReport)
+    await fs.writeFile(path.join(reportBaseDir, 'index.html'), chartReport)
 }
