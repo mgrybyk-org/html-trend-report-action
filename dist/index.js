@@ -27751,6 +27751,9 @@ function httpRedirectFetch (fetchParams, response) {
     // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name
     request.headersList.delete('authorization')
 
+    // https://fetch.spec.whatwg.org/#authentication-entries
+    request.headersList.delete('proxy-authorization', true)
+
     // "Cookie" and "Host" are forbidden request-headers, which undici doesn't implement.
     request.headersList.delete('cookie')
     request.headersList.delete('host')
@@ -38586,7 +38589,9 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony import */ var _src_csvReport_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(7925);
 /* harmony import */ var _src_isFileExists_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(2139);
 /* harmony import */ var _src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(4362);
-/* harmony import */ var _src_helpers_js__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(3015);
+/* harmony import */ var _src_helpers_js__WEBPACK_IMPORTED_MODULE_8__ = __nccwpck_require__(3015);
+/* harmony import */ var _src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(646);
+
 
 
 
@@ -38604,7 +38609,10 @@ try {
     const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('report_id');
     const reportType = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('report_type');
     const listDirs = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('list_dirs') == 'true';
-    const branchName = (0,_src_helpers_js__WEBPACK_IMPORTED_MODULE_7__/* .getBranchName */ .L)(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.payload.pull_request);
+    const listDirsBranch = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('list_dirs_branch') == 'true';
+    const branchCleanupEnabled = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('branch_cleanup_enabled') == 'true';
+    const maxReports = parseInt(_actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('max_reports'), 10);
+    const branchName = (0,_src_helpers_js__WEBPACK_IMPORTED_MODULE_8__/* .getBranchName */ .L)(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.payload.pull_request);
     const reportBaseDir = path__WEBPACK_IMPORTED_MODULE_0__.join(ghPagesPath, baseDir, branchName, reportId);
     /**
      * `runId` is unique but won't change on job re-run
@@ -38631,6 +38639,9 @@ try {
         reportDir,
         report_url: reportUrl,
         listDirs,
+        listDirsBranch,
+        branchCleanupEnabled,
+        maxReports,
     });
     if (!(await (0,_src_isFileExists_js__WEBPACK_IMPORTED_MODULE_5__/* .isFileExist */ .e)(ghPagesPath))) {
         throw new Error("Folder with gh-pages branch doesn't exist: " + ghPagesPath);
@@ -38655,6 +38666,9 @@ try {
             await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, '.');
         }
         await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, baseDir);
+    }
+    if (listDirsBranch) {
+        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, path__WEBPACK_IMPORTED_MODULE_0__.join(baseDir, branchName));
         await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, path__WEBPACK_IMPORTED_MODULE_0__.join(baseDir, branchName));
         if (reportType === 'html') {
             await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, path__WEBPACK_IMPORTED_MODULE_0__.join(baseDir, branchName, reportId));
@@ -38663,6 +38677,14 @@ try {
     // outputs
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_url', reportUrl);
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_history_url', ghPagesBaseDir);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('run_unique_id', runUniqueId);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_path', reportDir);
+    if (branchCleanupEnabled) {
+        await (0,_src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__/* .cleanupOutdatedBranches */ .B)(ghPagesBaseDir);
+    }
+    if (maxReports > 0) {
+        await (0,_src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__/* .cleanupOutdatedReports */ .g)(ghPagesBaseDir, maxReports);
+    }
 }
 catch (error) {
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed(error.message);
@@ -38670,6 +38692,107 @@ catch (error) {
 
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } }, 1);
+
+/***/ }),
+
+/***/ 646:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "B": () => (/* binding */ cleanupOutdatedBranches),
+  "g": () => (/* binding */ cleanupOutdatedReports)
+});
+
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
+// EXTERNAL MODULE: external "fs/promises"
+var promises_ = __nccwpck_require__(3292);
+;// CONCATENATED MODULE: external "child_process"
+const external_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("child_process");
+;// CONCATENATED MODULE: ./src/spawnProcess.ts
+
+const logError = (err, output) => {
+    console.log(output.join(''));
+    return err;
+};
+const spawnProcess = async (command, args, cwd) => {
+    const childProcess = external_child_process_namespaceObject.spawn(command, args, { cwd });
+    return new Promise((resolve, reject) => {
+        const output = [];
+        const r1 = childProcess.stdout?.on('data', (d) => output.push(d.toString()));
+        const r2 = childProcess.stderr?.on('data', (d) => output.push(d.toString()));
+        const p1 = new Promise((resolve) => (r1 ? r1.once('close', resolve) : resolve()));
+        const p2 = new Promise((resolve) => (r2 ? r2.once('close', resolve) : resolve()));
+        childProcess.once('error', (err) => reject(logError(err, output)));
+        childProcess.once('exit', async (code) => {
+            r1?.removeAllListeners('data');
+            r2?.removeAllListeners('data');
+            await p1;
+            await p2;
+            return code === 0 ? resolve(output.join('')) : reject(logError(code, output));
+        });
+    });
+};
+
+// EXTERNAL MODULE: ./src/helpers.ts
+var helpers = __nccwpck_require__(3015);
+;// CONCATENATED MODULE: ./src/cleanup.ts
+
+
+
+
+const cleanupOutdatedBranches = async (ghPagesBaseDir) => {
+    try {
+        const prefix = 'refs/heads/';
+        const lsRemote = await spawnProcess('git', ['ls-remote', '--heads']);
+        const remoteBranches = lsRemote
+            .split('\n')
+            .filter((l) => l.includes(prefix))
+            .map((l) => (0,helpers/* normalizeBranchName */.i)(l.split(prefix)[1]));
+        const localBranches = (await promises_.readdir(ghPagesBaseDir, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
+        for (const localBranch of localBranches) {
+            if (!remoteBranches.includes(localBranch)) {
+                await promises_.rm(external_path_.join(ghPagesBaseDir, localBranch), { recursive: true, force: true });
+            }
+        }
+    }
+    catch (err) {
+        console.error('cleanup outdated branches failed.', err);
+    }
+};
+const cleanupOutdatedReports = async (ghPagesBaseDir, maxReports) => {
+    try {
+        const localBranches = (await promises_.readdir(ghPagesBaseDir, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
+        // branches
+        for (const localBranch of localBranches) {
+            const reports = (await promises_.readdir(external_path_.join(ghPagesBaseDir, localBranch), { withFileTypes: true }))
+                .filter((d) => d.isDirectory())
+                .map((d) => d.name);
+            // report per branch
+            for (const reportName of reports) {
+                const runs = (await promises_.readdir(external_path_.join(ghPagesBaseDir, localBranch, reportName), { withFileTypes: true }))
+                    .filter((d) => d.isDirectory())
+                    .map((d) => d.name);
+                // run per report
+                if (runs.length > maxReports) {
+                    runs.sort();
+                    while (runs.length > maxReports) {
+                        await promises_.rm(external_path_.join(ghPagesBaseDir, localBranch, reportName, runs.shift()), {
+                            recursive: true,
+                            force: true,
+                        });
+                    }
+                }
+            }
+        }
+    }
+    catch (err) {
+        console.error('cleanup outdated reports failed.', err);
+    }
+};
+
 
 /***/ }),
 
@@ -38788,11 +38911,13 @@ const csvReport = async (sourceReportDir, reportBaseDir, reportId, meta) => {
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
-/* harmony export */   "L": () => (/* binding */ getBranchName)
+/* harmony export */   "L": () => (/* binding */ getBranchName),
+/* harmony export */   "i": () => (/* binding */ normalizeBranchName)
 /* harmony export */ });
+const normalizeBranchName = (branchName) => branchName.replaceAll('/', '_').replaceAll('.', '_');
 const getBranchName = (gitRef, pull_request) => {
     const branchName = pull_request ? pull_request.head.ref : gitRef.replace('refs/heads/', '');
-    return branchName.replaceAll('/', '_').replaceAll('.', '_');
+    return normalizeBranchName(branchName);
 };
 
 
