@@ -65,7 +65,7 @@ jobs:
           path: gh-pages-dir # checkout path
 
       - name: Allure Report Action
-        uses: mgrybyk/allure-report-branch-action@v1
+        uses: mgrybyk/allure-report-branch-js-action@v1
         if: always()
         continue-on-error: true
         id: allure
@@ -74,6 +74,8 @@ jobs:
           gh_pages: 'gh-pages-dir'
           report_dir: 'allure-results'
           list_dirs: ${{ github.ref == 'refs/heads/main' }}
+          branch_cleanup_enabled: ${{ github.ref == 'refs/heads/main' }}
+          max_reports: 9
 
       - name: generate csv report data
         if: ${{ always() && steps.allure.outputs.report_url }}
@@ -92,6 +94,8 @@ jobs:
           gh_pages: 'gh-pages-dir'
           report_dir: 'lighthouse-html'
           list_dirs: ${{ github.ref == 'refs/heads/main' }}
+          branch_cleanup_enabled: ${{ github.ref == 'refs/heads/main' }}
+          max_reports: 9
 
       - name: Local Chart Report (single)
         if: ${{ always() && steps.allure.outputs.report_url }}
@@ -103,6 +107,7 @@ jobs:
           report_dir: 'test-results/Allure_Trend.csv'
           list_dirs: ${{ github.ref == 'refs/heads/main' }}
           report_type: csv
+          max_reports: 9
 
       - name: Local Chart Report (multiple)
         if: ${{ always() && steps.allure.outputs.report_url }}
@@ -114,6 +119,7 @@ jobs:
           report_dir: 'lighthouse-csv'
           list_dirs: ${{ github.ref == 'refs/heads/main' }}
           report_type: csv
+          max_reports: 9
 
       - name: Git Commit and Push Action
         uses: mgrybyk/git-commit-pull-push-action@v1

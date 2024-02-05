@@ -2686,7 +2686,7 @@ var import_graphql = __nccwpck_require__(8467);
 var import_auth_token = __nccwpck_require__(334);
 
 // pkg/dist-src/version.js
-var VERSION = "5.0.2";
+var VERSION = "5.1.0";
 
 // pkg/dist-src/index.js
 var noop = () => {
@@ -27751,6 +27751,9 @@ function httpRedirectFetch (fetchParams, response) {
     // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name
     request.headersList.delete('authorization')
 
+    // https://fetch.spec.whatwg.org/#authentication-entries
+    request.headersList.delete('proxy-authorization', true)
+
     // "Cookie" and "Host" are forbidden request-headers, which undici doesn't implement.
     request.headersList.delete('cookie')
     request.headersList.delete('host')
@@ -38575,16 +38578,21 @@ function wrappy (fn, cb) {
 /***/ ((module, __unused_webpack___webpack_exports__, __nccwpck_require__) => {
 
 __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(7436);
-/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(_actions_io__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _src_csvReport_js__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(7925);
-/* harmony import */ var _src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(2139);
-/* harmony import */ var _src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(4362);
-/* harmony import */ var _src_helpers_js__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(3015);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(1017);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(path__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(7436);
+/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(_actions_io__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _src_csvReport_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(7925);
+/* harmony import */ var _src_isFileExists_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(2139);
+/* harmony import */ var _src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(4362);
+/* harmony import */ var _src_helpers_js__WEBPACK_IMPORTED_MODULE_8__ = __nccwpck_require__(3015);
+/* harmony import */ var _src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(646);
+
+
 
 
 
@@ -38596,76 +38604,196 @@ const baseDir = 'report-action';
 try {
     const runTimestamp = Date.now();
     // vars
-    const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_dir');
-    const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('gh_pages');
-    const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_id');
-    const reportType = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('report_type');
-    const listDirs = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('list_dirs') == 'true';
-    const branchName = (0,_src_helpers_js__WEBPACK_IMPORTED_MODULE_6__/* .getBranchName */ .L)(_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref, _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.payload.pull_request);
-    const reportBaseDir = `${ghPagesPath}/${baseDir}/${branchName}/${reportId}`;
+    const sourceReportDir = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('report_dir');
+    const ghPagesPath = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('gh_pages');
+    const reportId = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('report_id');
+    const reportType = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('report_type');
+    const listDirs = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('list_dirs') == 'true';
+    const listDirsBranch = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('list_dirs_branch') == 'true';
+    const branchCleanupEnabled = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('branch_cleanup_enabled') == 'true';
+    const maxReports = parseInt(_actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('max_reports'), 10);
+    const branchName = (0,_src_helpers_js__WEBPACK_IMPORTED_MODULE_8__/* .getBranchName */ .L)(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.payload.pull_request);
+    const ghPagesBaseDir = path__WEBPACK_IMPORTED_MODULE_0__.join(ghPagesPath, baseDir);
+    const reportBaseDir = path__WEBPACK_IMPORTED_MODULE_0__.join(ghPagesBaseDir, branchName, reportId);
     /**
      * `runId` is unique but won't change on job re-run
      * `runNumber` is not unique and resets from time to time
      * that's why the `runTimestamp` is used to guarantee uniqueness
      */
-    const runUniqueId = `${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId}_${runTimestamp}`;
-    const reportDir = `${reportBaseDir}/${runUniqueId}`;
+    const runUniqueId = `${_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.runId}_${runTimestamp}`;
+    const reportDir = path__WEBPACK_IMPORTED_MODULE_0__.join(reportBaseDir, runUniqueId);
     // urls
-    const ghPagesUrl = `https://${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner}.github.io/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo}`;
-    const ghPagesBaseDir = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`.replaceAll(' ', '%20');
-    const ghPagesReportDir = `${ghPagesBaseDir}/${runUniqueId}`.replaceAll(' ', '%20');
+    const ghPagesUrl = `https://${_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner}.github.io/${_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo}`;
+    const ghPagesBaseUrl = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`.replaceAll(' ', '%20');
+    const ghPagesReportUrl = `${ghPagesBaseUrl}/${runUniqueId}`.replaceAll(' ', '%20');
+    const reportUrl = reportType === 'csv' ? ghPagesBaseUrl : ghPagesReportUrl;
     // log
     console.log({
         report_dir: sourceReportDir,
         gh_pages: ghPagesPath,
         report_id: reportId,
         runUniqueId,
-        ref: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref,
-        repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+        ref: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref,
+        repo: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo,
         branchName,
         reportBaseDir,
         reportDir,
-        report_url: ghPagesReportDir,
+        report_url: reportUrl,
         listDirs,
+        listDirsBranch,
+        branchCleanupEnabled,
+        maxReports,
     });
-    if (!(await (0,_src_isFileExists_js__WEBPACK_IMPORTED_MODULE_4__/* .isFileExist */ .e)(ghPagesPath))) {
+    if (!(await (0,_src_isFileExists_js__WEBPACK_IMPORTED_MODULE_5__/* .isFileExist */ .e)(ghPagesPath))) {
         throw new Error("Folder with gh-pages branch doesn't exist: " + ghPagesPath);
     }
     if (!['html', 'csv'].includes(reportType)) {
         throw new Error('Unsupported report type: ' + reportType);
     }
     // action
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__.mkdirP(reportBaseDir);
+    await _actions_io__WEBPACK_IMPORTED_MODULE_3__.mkdirP(reportBaseDir);
     // process report
     if (reportType === 'html') {
-        await _actions_io__WEBPACK_IMPORTED_MODULE_2__.cp(sourceReportDir, reportDir, { recursive: true });
+        await _actions_io__WEBPACK_IMPORTED_MODULE_3__.cp(sourceReportDir, reportDir, { recursive: true });
     }
     else if (reportType === 'csv') {
-        await (0,_src_csvReport_js__WEBPACK_IMPORTED_MODULE_3__/* .csvReport */ .K)(sourceReportDir, reportBaseDir, reportId, {
-            sha: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.sha,
+        await (0,_src_csvReport_js__WEBPACK_IMPORTED_MODULE_4__/* .csvReport */ .K)(sourceReportDir, reportBaseDir, reportId, {
+            sha: _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.sha,
         });
     }
     // folder listing
     if (listDirs) {
-        if (await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .shouldWriteRootHtml */ .z)(ghPagesPath)) {
-            await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, '.');
+        if (await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .shouldWriteRootHtml */ .z)(ghPagesPath)) {
+            await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, '.');
         }
-        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, baseDir);
-        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, `${baseDir}/${branchName}`);
+        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, baseDir);
+    }
+    if (listDirsBranch) {
+        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, path__WEBPACK_IMPORTED_MODULE_0__.join(baseDir, branchName));
+        await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, path__WEBPACK_IMPORTED_MODULE_0__.join(baseDir, branchName));
         if (reportType === 'html') {
-            await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_5__/* .writeFolderListing */ .l)(ghPagesPath, `${baseDir}/${branchName}/${reportId}`);
+            await (0,_src_writeFolderListing_js__WEBPACK_IMPORTED_MODULE_6__/* .writeFolderListing */ .l)(ghPagesPath, path__WEBPACK_IMPORTED_MODULE_0__.join(baseDir, branchName, reportId));
         }
     }
     // outputs
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_url', reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir);
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('report_history_url', ghPagesBaseDir);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_url', reportUrl);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_history_url', ghPagesBaseUrl);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('run_unique_id', runUniqueId);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_path', reportDir);
+    if (branchCleanupEnabled) {
+        await (0,_src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__/* .cleanupOutdatedBranches */ .B)(ghPagesBaseDir);
+    }
+    if (maxReports > 0) {
+        await (0,_src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__/* .cleanupOutdatedReports */ .g)(ghPagesBaseDir, maxReports);
+    }
 }
 catch (error) {
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed(error.message);
 }
 
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } }, 1);
+
+/***/ }),
+
+/***/ 646:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "B": () => (/* binding */ cleanupOutdatedBranches),
+  "g": () => (/* binding */ cleanupOutdatedReports)
+});
+
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
+// EXTERNAL MODULE: external "fs/promises"
+var promises_ = __nccwpck_require__(3292);
+;// CONCATENATED MODULE: external "child_process"
+const external_child_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("child_process");
+;// CONCATENATED MODULE: ./src/spawnProcess.ts
+
+const logError = (err, output) => {
+    console.log(output.join(''));
+    return err;
+};
+const spawnProcess = async (command, args, cwd) => {
+    const childProcess = external_child_process_namespaceObject.spawn(command, args, { cwd });
+    return new Promise((resolve, reject) => {
+        const output = [];
+        const r1 = childProcess.stdout?.on('data', (d) => output.push(d.toString()));
+        const r2 = childProcess.stderr?.on('data', (d) => output.push(d.toString()));
+        const p1 = new Promise((resolve) => (r1 ? r1.once('close', resolve) : resolve()));
+        const p2 = new Promise((resolve) => (r2 ? r2.once('close', resolve) : resolve()));
+        childProcess.once('error', (err) => reject(logError(err, output)));
+        childProcess.once('exit', async (code) => {
+            r1?.removeAllListeners('data');
+            r2?.removeAllListeners('data');
+            await p1;
+            await p2;
+            return code === 0 ? resolve(output.join('')) : reject(logError(code, output));
+        });
+    });
+};
+
+// EXTERNAL MODULE: ./src/helpers.ts
+var helpers = __nccwpck_require__(3015);
+;// CONCATENATED MODULE: ./src/cleanup.ts
+
+
+
+
+const cleanupOutdatedBranches = async (ghPagesBaseDir) => {
+    try {
+        const prefix = 'refs/heads/';
+        const lsRemote = await spawnProcess('git', ['ls-remote', '--heads']);
+        const remoteBranches = lsRemote
+            .split('\n')
+            .filter((l) => l.includes(prefix))
+            .map((l) => (0,helpers/* normalizeBranchName */.i)(l.split(prefix)[1]));
+        const localBranches = (await promises_.readdir(ghPagesBaseDir, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
+        for (const localBranch of localBranches) {
+            if (!remoteBranches.includes(localBranch)) {
+                await promises_.rm(external_path_.join(ghPagesBaseDir, localBranch), { recursive: true, force: true });
+            }
+        }
+    }
+    catch (err) {
+        console.error('cleanup outdated branches failed.', err);
+    }
+};
+const cleanupOutdatedReports = async (ghPagesBaseDir, maxReports) => {
+    try {
+        const localBranches = (await promises_.readdir(ghPagesBaseDir, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
+        // branches
+        for (const localBranch of localBranches) {
+            const reports = (await promises_.readdir(external_path_.join(ghPagesBaseDir, localBranch), { withFileTypes: true }))
+                .filter((d) => d.isDirectory())
+                .map((d) => d.name);
+            // report per branch
+            for (const reportName of reports) {
+                const runs = (await promises_.readdir(external_path_.join(ghPagesBaseDir, localBranch, reportName), { withFileTypes: true }))
+                    .filter((d) => d.isDirectory())
+                    .map((d) => d.name);
+                // run per report
+                if (runs.length > maxReports) {
+                    runs.sort();
+                    while (runs.length > maxReports) {
+                        await promises_.rm(external_path_.join(ghPagesBaseDir, localBranch, reportName, runs.shift()), {
+                            recursive: true,
+                            force: true,
+                        });
+                    }
+                }
+            }
+        }
+    }
+    catch (err) {
+        console.error('cleanup outdated reports failed.', err);
+    }
+};
+
 
 /***/ }),
 
@@ -38699,7 +38827,7 @@ const chartReport = Buffer.from('PCEtLSByZXBvcnQtYWN0aW9uIC0tPgo8IWRvY3R5cGUgaHR
 
 const csvExt = '.csv';
 const csvReport = async (sourceReportDir, reportBaseDir, reportId, meta) => {
-    const dataFile = `${reportBaseDir}/data.json`;
+    const dataFile = external_path_.join(reportBaseDir, 'data.json');
     let csvJson;
     if (await (0,isFileExists/* isFileExist */.e)(dataFile)) {
         csvJson = JSON.parse((await promises_.readFile(dataFile)).toString('utf-8'));
@@ -38774,7 +38902,7 @@ const csvReport = async (sourceReportDir, reportBaseDir, reportId, meta) => {
         entry.records.push(record);
     });
     await promises_.writeFile(dataFile, JSON.stringify(csvJson, null, 2));
-    await promises_.writeFile(`${reportBaseDir}/index.html`, chartReport);
+    await promises_.writeFile(external_path_.join(reportBaseDir, 'index.html'), chartReport);
 };
 
 
@@ -38784,11 +38912,13 @@ const csvReport = async (sourceReportDir, reportBaseDir, reportId, meta) => {
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
-/* harmony export */   "L": () => (/* binding */ getBranchName)
+/* harmony export */   "L": () => (/* binding */ getBranchName),
+/* harmony export */   "i": () => (/* binding */ normalizeBranchName)
 /* harmony export */ });
+const normalizeBranchName = (branchName) => branchName.replaceAll('/', '_').replaceAll('.', '_');
 const getBranchName = (gitRef, pull_request) => {
     const branchName = pull_request ? pull_request.head.ref : gitRef.replace('refs/heads/', '');
-    return branchName.replaceAll('/', '_').replaceAll('.', '_');
+    return normalizeBranchName(branchName);
 };
 
 
@@ -38826,6 +38956,8 @@ __nccwpck_require__.d(__webpack_exports__, {
   "l": () => (/* binding */ writeFolderListing)
 });
 
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
 // EXTERNAL MODULE: external "fs/promises"
 var promises_ = __nccwpck_require__(3292);
 ;// CONCATENATED MODULE: ./src/report_listing.ts
@@ -38835,6 +38967,7 @@ const listingReport = Buffer.from('PCEtLSByZXBvcnQtYWN0aW9uIC0tPgo8IWRvY3R5cGUga
 // EXTERNAL MODULE: ./src/isFileExists.ts
 var isFileExists = __nccwpck_require__(2139);
 ;// CONCATENATED MODULE: ./src/writeFolderListing.ts
+
 
 
 
@@ -38851,12 +38984,12 @@ const writeFolderListing = async (ghPagesPath, relPath) => {
         .map((d) => d.name);
     links.push(...listdir);
     const data = { links };
-    await promises_.writeFile(`${fullPath}/data.json`, JSON.stringify(data, null, 2));
-    await promises_.writeFile(`${fullPath}/index.html`, listingReport);
+    await promises_.writeFile(external_path_.join(fullPath, 'data.json'), JSON.stringify(data, null, 2));
+    await promises_.writeFile(external_path_.join(fullPath, 'index.html'), listingReport);
 };
 const shouldWriteRootHtml = async (ghPagesPath) => {
     // do noot overwrite index.html in the folder root to avoid conflicts
-    const rootHtmlPath = `${ghPagesPath}/index.html`;
+    const rootHtmlPath = external_path_.join(ghPagesPath, 'index.html');
     const isRootHtmlExisting = await (0,isFileExists/* isFileExist */.e)(rootHtmlPath);
     // write index.html in the folder root if it doesn't exist
     if (!isRootHtmlExisting) {
