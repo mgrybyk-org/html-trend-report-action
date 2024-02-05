@@ -122,6 +122,6 @@ concurrency:
 
 - [thollander/actions-comment-pull-request](https://github.com/thollander/actions-comment-pull-request) for building Github Action that comments the linked PRs
 
-## Upcoming features
+## ## Planned features
 
-- cleanup old reports
+- cleanup `data.json` file per report. Raise an issue if you're interested!
