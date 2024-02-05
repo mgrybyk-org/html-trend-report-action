@@ -1,7 +1,6 @@
 {
   "links": [
     "allure-action",
-    "allure-js-action",
     "report-action"
   ]
 }
