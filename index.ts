@@ -23,7 +23,8 @@ try {
     const branchCleanupEnabled = core.getInput('branch_cleanup_enabled') == 'true'
     const maxReports = parseInt(core.getInput('max_reports'), 10)
     const branchName = getBranchName(github.context.ref, github.context.payload.pull_request)
-    const reportBaseDir = path.join(ghPagesPath, baseDir, branchName, reportId)
+    const ghPagesBaseDir = path.join(ghPagesPath, baseDir)
+    const reportBaseDir = path.join(ghPagesBaseDir, branchName, reportId)
 
     /**
      * `runId` is unique but won't change on job re-run
@@ -35,10 +36,10 @@ try {
 
     // urls
     const ghPagesUrl = `https://${github.context.repo.owner}.github.io/${github.context.repo.repo}`
-    const ghPagesBaseDir = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`.replaceAll(' ', '%20')
-    const ghPagesReportDir = `${ghPagesBaseDir}/${runUniqueId}`.replaceAll(' ', '%20')
+    const ghPagesBaseUrl = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`.replaceAll(' ', '%20')
+    const ghPagesReportUrl = `${ghPagesBaseUrl}/${runUniqueId}`.replaceAll(' ', '%20')
 
-    const reportUrl = reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir
+    const reportUrl = reportType === 'csv' ? ghPagesBaseUrl : ghPagesReportUrl
 
     // log
     console.log({
@@ -95,7 +96,7 @@ try {
 
     // outputs
     core.setOutput('report_url', reportUrl)
-    core.setOutput('report_history_url', ghPagesBaseDir)
+    core.setOutput('report_history_url', ghPagesBaseUrl)
     core.setOutput('run_unique_id', runUniqueId)
     core.setOutput('report_path', reportDir)
 

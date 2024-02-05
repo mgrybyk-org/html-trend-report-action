@@ -38613,7 +38613,8 @@ try {
     const branchCleanupEnabled = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('branch_cleanup_enabled') == 'true';
     const maxReports = parseInt(_actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('max_reports'), 10);
     const branchName = (0,_src_helpers_js__WEBPACK_IMPORTED_MODULE_8__/* .getBranchName */ .L)(_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.ref, _actions_github__WEBPACK_IMPORTED_MODULE_2__.context.payload.pull_request);
-    const reportBaseDir = path__WEBPACK_IMPORTED_MODULE_0__.join(ghPagesPath, baseDir, branchName, reportId);
+    const ghPagesBaseDir = path__WEBPACK_IMPORTED_MODULE_0__.join(ghPagesPath, baseDir);
+    const reportBaseDir = path__WEBPACK_IMPORTED_MODULE_0__.join(ghPagesBaseDir, branchName, reportId);
     /**
      * `runId` is unique but won't change on job re-run
      * `runNumber` is not unique and resets from time to time
@@ -38623,9 +38624,9 @@ try {
     const reportDir = path__WEBPACK_IMPORTED_MODULE_0__.join(reportBaseDir, runUniqueId);
     // urls
     const ghPagesUrl = `https://${_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.owner}.github.io/${_actions_github__WEBPACK_IMPORTED_MODULE_2__.context.repo.repo}`;
-    const ghPagesBaseDir = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`.replaceAll(' ', '%20');
-    const ghPagesReportDir = `${ghPagesBaseDir}/${runUniqueId}`.replaceAll(' ', '%20');
-    const reportUrl = reportType === 'csv' ? ghPagesBaseDir : ghPagesReportDir;
+    const ghPagesBaseUrl = `${ghPagesUrl}/${baseDir}/${branchName}/${reportId}`.replaceAll(' ', '%20');
+    const ghPagesReportUrl = `${ghPagesBaseUrl}/${runUniqueId}`.replaceAll(' ', '%20');
+    const reportUrl = reportType === 'csv' ? ghPagesBaseUrl : ghPagesReportUrl;
     // log
     console.log({
         report_dir: sourceReportDir,
@@ -38676,7 +38677,7 @@ try {
     }
     // outputs
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_url', reportUrl);
-    _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_history_url', ghPagesBaseDir);
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_history_url', ghPagesBaseUrl);
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('run_unique_id', runUniqueId);
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_path', reportDir);
     if (branchCleanupEnabled) {
