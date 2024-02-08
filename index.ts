@@ -70,6 +70,14 @@ try {
     // action
     await io.mkdirP(reportBaseDir)
 
+    // cleanup (should be before the folder listing)
+    if (branchCleanupEnabled) {
+        await cleanupOutdatedBranches(ghPagesBaseDir)
+    }
+    if (maxReports > 0) {
+        await cleanupOutdatedReports(ghPagesBaseDir, maxReports)
+    }
+
     // process report
     if (reportType === 'html') {
         await io.cp(sourceReportDir, reportDir, { recursive: true })
@@ -99,13 +107,6 @@ try {
     core.setOutput('report_history_url', ghPagesBaseUrl)
     core.setOutput('run_unique_id', runUniqueId)
     core.setOutput('report_path', reportDir)
-
-    if (branchCleanupEnabled) {
-        await cleanupOutdatedBranches(ghPagesBaseDir)
-    }
-    if (maxReports > 0) {
-        await cleanupOutdatedReports(ghPagesBaseDir, maxReports)
-    }
 } catch (error) {
     core.setFailed(error.message)
 }
