@@ -17,7 +17,16 @@
             return
           }
 
-          window.location.replace(window.location.pathname.replace('latest.html', `${json.links.pop()}`))
+          const ending = window.location.pathname.endsWith('latest.html')
+            ? 'latest.html'
+            : window.location.pathname.endsWith('latest')
+              ? 'latest'
+              : null
+          if (ending) {
+            window.location.replace(window.location.pathname.replace(ending, `${json.links.pop()}`))
+          } else {
+            console.error('something went wrong')
+          }
         })
     </script>
   </body>
