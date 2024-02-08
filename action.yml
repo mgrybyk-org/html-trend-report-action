@@ -43,9 +43,9 @@ outputs:
   report_history_url:
     description: 'Published History list url'
   run_unique_id:
-    description: 'Name of the folder containing the generated Allure Report'
+    description: 'Name of the folder containing the report'
   report_path:
-    description: 'Path to the folder containing the generated Allure Report relative to the repo root'
+    description: 'Path to the folder containing the report relative to the repo root'
 runs:
   using: 'node20'
   main: 'dist/index.js'

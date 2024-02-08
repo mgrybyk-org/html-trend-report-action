@@ -38652,6 +38652,13 @@ try {
     }
     // action
     await _actions_io__WEBPACK_IMPORTED_MODULE_3__.mkdirP(reportBaseDir);
+    // cleanup (should be before the folder listing)
+    if (branchCleanupEnabled) {
+        await (0,_src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__/* .cleanupOutdatedBranches */ .B)(ghPagesBaseDir);
+    }
+    if (maxReports > 0) {
+        await (0,_src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__/* .cleanupOutdatedReports */ .g)(ghPagesBaseDir, maxReports);
+    }
     // process report
     if (reportType === 'html') {
         await _actions_io__WEBPACK_IMPORTED_MODULE_3__.cp(sourceReportDir, reportDir, { recursive: true });
@@ -38680,12 +38687,6 @@ try {
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_history_url', ghPagesBaseUrl);
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('run_unique_id', runUniqueId);
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setOutput('report_path', reportDir);
-    if (branchCleanupEnabled) {
-        await (0,_src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__/* .cleanupOutdatedBranches */ .B)(ghPagesBaseDir);
-    }
-    if (maxReports > 0) {
-        await (0,_src_cleanup_js__WEBPACK_IMPORTED_MODULE_7__/* .cleanupOutdatedReports */ .g)(ghPagesBaseDir, maxReports);
-    }
 }
 catch (error) {
     _actions_core__WEBPACK_IMPORTED_MODULE_1__.setFailed(error.message);
