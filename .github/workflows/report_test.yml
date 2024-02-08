@@ -84,7 +84,6 @@ jobs:
           outFile=test-results/Allure_Trend.csv
           echo Passed,Failed,Total > $outFile
           echo ${{ steps.allure.outputs.test_result_passed }},${{ steps.allure.outputs.test_result_failed }},${{ steps.allure.outputs.test_result_total }} >> $outFile
-
       - name: Local HTML Report
         if: always()
         uses: ./ # Uses an action in the root directory
@@ -127,6 +126,7 @@ jobs:
         with:
           repository: gh-pages-dir
           branch: gh-pages
+          pull_args: --rebase -X ours
 
       - name: Comment PR with Allure Report link
         if: ${{ always() && github.event_name == 'pull_request' && (steps.allure.outputs.report_url || steps.html-1.outputs.report_url || steps.chart-2.outputs.report_url) }}
