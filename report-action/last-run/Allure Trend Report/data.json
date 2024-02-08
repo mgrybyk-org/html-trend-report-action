@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "name": "Allure_Trend",
+      "labels": [
+        "Passed",
+        "Failed",
+        "Total"
+      ],
+      "lines": 3,
+      "records": [
+        {
+          "meta": {
+            "sha": "de31107f68f3a651148e4d791155e0d9f606b573"
+          },
+          "data": [
+            {
+              "x": 1707394141992,
+              "y": 2
+            },
+            {
+              "x": 1707394141992,
+              "y": 0
+            },
+            {
+              "x": 1707394141992,
+              "y": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "title": "Allure Trend Report"
+}
