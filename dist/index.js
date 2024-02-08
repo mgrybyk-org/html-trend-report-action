@@ -38771,7 +38771,6 @@ const cleanupOutdatedBranches = async (ghPagesBaseDir) => {
     }
 };
 const cleanupOutdatedReports = async (ghPagesBaseDir, maxReports) => {
-    console.log(maxReports);
     try {
         const localBranches = (await promises_.readdir(ghPagesBaseDir, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
         // branches
@@ -38785,15 +38784,13 @@ const cleanupOutdatedReports = async (ghPagesBaseDir, maxReports) => {
                     .filter((d) => d.isDirectory())
                     .map((d) => d.name);
                 // run per report
-                if (runs.length > 0) {
+                if (runs.length > maxReports) {
                     runs.sort();
-                    while (runs.length > 0) {
-                        const pathToDelete = external_path_.join(ghPagesBaseDir, localBranch, reportName, runs.shift());
-                        console.log(pathToDelete);
-                        // await fs.rm(path.join(ghPagesBaseDir, localBranch, reportName, runs.shift() as string), {
-                        //     recursive: true,
-                        //     force: true,
-                        // })
+                    while (runs.length > maxReports) {
+                        await promises_.rm(external_path_.join(ghPagesBaseDir, localBranch, reportName, runs.shift()), {
+                            recursive: true,
+                            force: true,
+                        });
                     }
                 }
             }

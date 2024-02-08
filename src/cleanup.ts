@@ -25,7 +25,6 @@ export const cleanupOutdatedBranches = async (ghPagesBaseDir: string) => {
 }
 
 export const cleanupOutdatedReports = async (ghPagesBaseDir: string, maxReports: number) => {
-    console.log(maxReports)
     try {
         const localBranches = (await fs.readdir(ghPagesBaseDir, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name)
 
@@ -42,15 +41,13 @@ export const cleanupOutdatedReports = async (ghPagesBaseDir: string, maxReports:
                     .map((d) => d.name)
 
                 // run per report
-                if (runs.length > 0) {
+                if (runs.length > maxReports) {
                     runs.sort()
-                    while (runs.length > 0) {
-                        const pathToDelete = path.join(ghPagesBaseDir, localBranch, reportName, runs.shift() as string)
-                        console.log(pathToDelete)
-                        // await fs.rm(path.join(ghPagesBaseDir, localBranch, reportName, runs.shift() as string), {
-                        //     recursive: true,
-                        //     force: true,
-                        // })
+                    while (runs.length > maxReports) {
+                        await fs.rm(path.join(ghPagesBaseDir, localBranch, reportName, runs.shift() as string), {
+                            recursive: true,
+                            force: true,
+                        })
                     }
                 }
             }
