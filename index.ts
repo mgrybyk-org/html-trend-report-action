@@ -7,6 +7,7 @@ import { isFileExist } from './src/isFileExists.js'
 import { shouldWriteRootHtml, writeFolderListing } from './src/writeFolderListing.js'
 import { getBranchName } from './src/helpers.js'
 import { cleanupOutdatedBranches, cleanupOutdatedReports } from './src/cleanup.js'
+import { writeLatestReport } from './src/writeLatest.js'
 
 const baseDir = 'report-action'
 
@@ -66,6 +67,7 @@ try {
     if (!['html', 'csv'].includes(reportType)) {
         throw new Error('Unsupported report type: ' + reportType)
     }
+    const isHtmlReport = reportType === 'html'
 
     // action
     await io.mkdirP(reportBaseDir)
@@ -79,7 +81,7 @@ try {
     }
 
     // process report
-    if (reportType === 'html') {
+    if (isHtmlReport) {
         await io.cp(sourceReportDir, reportDir, { recursive: true })
     } else if (reportType === 'csv') {
         await csvReport(sourceReportDir, reportBaseDir, reportId, {
@@ -97,9 +99,12 @@ try {
     if (listDirsBranch) {
         await writeFolderListing(ghPagesPath, path.join(baseDir, branchName))
         await writeFolderListing(ghPagesPath, path.join(baseDir, branchName))
-        if (reportType === 'html') {
+        if (isHtmlReport) {
             await writeFolderListing(ghPagesPath, path.join(baseDir, branchName, reportId))
         }
+    }
+    if (isHtmlReport) {
+        await writeLatestReport(reportBaseDir)
     }
 
     // outputs
