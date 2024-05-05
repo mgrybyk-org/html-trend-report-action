@@ -7,14 +7,14 @@ Implementation of Jenkins [Plot](https://plugins.jenkins.io/plot/) and [HTML Pub
 
 See examples:
 
-- [CSV report, single file, Allure Trend](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Allure%20Trend%20Report/)
-- [CSV report, multiple files, Lighthouse Trend](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Trend%20Report/)
-- [HTML Report](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/latest.html)
-- [HTML Report history](https://mgrybyk.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/)
-- [Browse different branches](https://mgrybyk.github.io/html-trend-report-action/)
-- [Pull Request Comment Example](https://github.com/mgrybyk/html-trend-report-action/pull/3)
+- [CSV report, single file, Allure Trend](https://mgrybyk-org.github.io/html-trend-report-action/report-action/main/Allure%20Trend%20Report/)
+- [CSV report, multiple files, Lighthouse Trend](https://mgrybyk-org.github.io/html-trend-report-action/report-action/main/Lighthouse%20Trend%20Report/)
+- [HTML Report](https://mgrybyk-org.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/latest.html)
+- [HTML Report history](https://mgrybyk-org.github.io/html-trend-report-action/report-action/main/Lighthouse%20Report/)
+- [Browse different branches](https://mgrybyk-org.github.io/html-trend-report-action/)
+- [Pull Request Comment Example](https://github.com/mgrybyk-org/html-trend-report-action/pull/3)
 
-*Compatible with [allure-report-branch-action](https://github.com/marketplace/actions/allure-report-with-history-per-branch). See [Allure History List](https://mgrybyk.github.io/html-trend-report-action/allure-action/main/self-test/)*
+*Compatible with [allure-report-branch-action](https://github.com/marketplace/actions/allure-report-with-history-per-branch). See [Allure History List](https://mgrybyk-org.github.io/html-trend-report-action/allure-action/main/self-test/)*
 
 ## Usage
 
@@ -37,7 +37,7 @@ steps:
 
   - name: HTML Report
     if: always()
-    uses: mgrybyk/html-trend-report-action@v1
+    uses: mgrybyk-org/html-trend-report-action@v1
     id: html-report # used in comment to PR
     with:
       report_id: 'Jacoco Report'
@@ -46,7 +46,7 @@ steps:
 
   - name: Chart Report (single csv)
     if: ${{ always() }}
-    uses: mgrybyk/html-trend-report-action@v1
+    uses: mgrybyk-org/html-trend-report-action@v1
     id: chart-report # used in comment to PR
     with:
       report_id: 'Trend Report'
@@ -57,7 +57,7 @@ steps:
 
   - name: Chart Report (multiple csv)
     if: ${{ always() }}
-    uses: mgrybyk/html-trend-report-action@v1
+    uses: mgrybyk-org/html-trend-report-action@v1
     id: chart-report # used in comment to PR
     with:
       report_id: 'Trend Report'
@@ -66,7 +66,7 @@ steps:
       report_type: csv
 
   - name: Git Commit and Push Action
-    uses: mgrybyk/git-commit-pull-push-action@v1
+    uses: mgrybyk-org/git-commit-pull-push-action@v1
     if: always()
     with:
       repository: gh-pages-dir
@@ -76,7 +76,7 @@ steps:
 
 ### Adding PR Comment
 
-Make sure to set `id` in `mgrybyk/html-trend-report-action` step.
+Make sure to set `id` in `mgrybyk-org/html-trend-report-action` step.
 
 ```yaml
 permissions:
