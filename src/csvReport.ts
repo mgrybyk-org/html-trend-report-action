@@ -1,6 +1,8 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import csvtojson from 'csvtojson'
+import csvToJson from 'convert-csv-to-json'
+import Papa from 'papaparse'
 import { isFileExist } from './isFileExists.js'
 import { chartReport } from './report_chart.js'
 
@@ -28,6 +30,30 @@ export const csvReport = async (
     const filesContent: Array<{ name: string; json: Array<Record<string, string | number>> }> = []
     if (sourceReportDir.toLowerCase().endsWith(csvExt)) {
         const json = await csvtojson().fromFile(sourceReportDir)
+        const json2 = csvToJson.getJsonFromCsv(sourceReportDir)
+        const json3 = await new Promise((resolve) =>
+            Papa.parse(sourceReportDir, {
+                complete(results) {
+                    resolve(results)
+                },
+            })
+        )
+        const jsonStr = JSON.stringify(json)
+        const jsonStr2 = JSON.stringify(json2)
+        const jsonStr3 = JSON.stringify(json3)
+
+        console.log('jsonStr === jsonStr2', jsonStr === jsonStr2)
+        console.log('jsonStr === jsonStr3', jsonStr === jsonStr3)
+        console.log('jsonStr2 === jsonStr3', jsonStr2 === jsonStr3)
+
+        console.log('-'.repeat(60))
+        console.log(jsonStr)
+        console.log('^'.repeat(60))
+        console.log(jsonStr2)
+        console.log('^'.repeat(60))
+        console.log(jsonStr3)
+        console.log('-'.repeat(60))
+
         filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
     } else {
         const csvFiles = (await fs.readdir(sourceReportDir, { withFileTypes: true }))
