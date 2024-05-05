@@ -1,6 +1,5 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import csvtojson from 'csvtojson'
 import csvToJson from 'convert-csv-to-json'
 import { isFileExist } from './isFileExists.js'
 import { chartReport } from './report_chart.js'
@@ -28,20 +27,7 @@ export const csvReport = async (
     }
     const filesContent: Array<{ name: string; json: Array<Record<string, string | number>> }> = []
     if (sourceReportDir.toLowerCase().endsWith(csvExt)) {
-        const json = await csvtojson().fromFile(sourceReportDir)
-        const json2 = csvToJson.fieldDelimiter(',').getJsonFromCsv(sourceReportDir)
-
-        const jsonStr = JSON.stringify(json)
-        const jsonStr2 = JSON.stringify(json2)
-
-        console.log('jsonStr === jsonStr2', jsonStr === jsonStr2)
-
-        console.log('-'.repeat(60))
-        console.log(jsonStr)
-        console.log('^'.repeat(60))
-        console.log(jsonStr2)
-        console.log('-'.repeat(60))
-
+        const json = csvToJson.fieldDelimiter(',').getJsonFromCsv(sourceReportDir)
         filesContent.push({ name: path.basename(sourceReportDir, path.extname(sourceReportDir)), json })
     } else {
         const csvFiles = (await fs.readdir(sourceReportDir, { withFileTypes: true }))
@@ -49,7 +35,7 @@ export const csvReport = async (
             .sort((a, b) => a.name.localeCompare(b.name))
 
         for (const csvFile of csvFiles) {
-            const json = await csvtojson().fromFile(path.join(sourceReportDir, csvFile.name))
+            const json = csvToJson.fieldDelimiter(',').getJsonFromCsv(path.join(sourceReportDir, csvFile.name))
             filesContent.push({ name: path.basename(csvFile.name, csvExt), json })
         }
     }
