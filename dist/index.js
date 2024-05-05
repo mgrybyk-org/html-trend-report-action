@@ -41558,8 +41558,9 @@ const csvReport = async (sourceReportDir, reportBaseDir, reportId, meta) => {
     const filesContent = [];
     if (sourceReportDir.toLowerCase().endsWith(csvExt)) {
         const json = await v2_default()().fromFile(sourceReportDir);
-        const json2 = convert_csv_to_json.getJsonFromCsv(sourceReportDir);
+        const json2 = convert_csv_to_json.parseSubArray('*', ',').getJsonFromCsv(sourceReportDir);
         const json3 = await new Promise((resolve) => papaparse_default().parse(sourceReportDir, {
+            delimiter: ',',
             complete(results) {
                 resolve(results);
             },

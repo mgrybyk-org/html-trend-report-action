@@ -30,9 +30,10 @@ export const csvReport = async (
     const filesContent: Array<{ name: string; json: Array<Record<string, string | number>> }> = []
     if (sourceReportDir.toLowerCase().endsWith(csvExt)) {
         const json = await csvtojson().fromFile(sourceReportDir)
-        const json2 = csvToJson.getJsonFromCsv(sourceReportDir)
+        const json2 = csvToJson.parseSubArray('*', ',').getJsonFromCsv(sourceReportDir)
         const json3 = await new Promise((resolve) =>
             Papa.parse(sourceReportDir, {
+                delimiter: ',',
                 complete(results) {
                     resolve(results)
                 },
