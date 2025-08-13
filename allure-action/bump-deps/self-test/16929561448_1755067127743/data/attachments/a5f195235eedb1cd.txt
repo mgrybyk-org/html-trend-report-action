@@ -1,1 +1,0 @@
-/home/runner/work/html-trend-report-action/html-trend-report-action/tests/spec/html-list.spec.ts-snapshots/html-list-1-chromium-linux.png is re-generated, writing actual.
