@@ -18,6 +18,7 @@ lighthousePages.forEach(({ name, url }) => {
         const onlyCategories = ['accessibility']
         const thresholds = { accessibility: 100 }
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         context // let playwright initialize context
 
         const result = await playAudit({
