@@ -1,0 +1,3 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","350","html list","chromium","Mon Oct 20 19:13:22 UTC 2025","passed","Mon Oct 20 19:13:23 UTC 2025","","html-list.spec.ts","",""
+"","442","chart","chromium","Mon Oct 20 19:13:22 UTC 2025","passed","Mon Oct 20 19:13:23 UTC 2025","","chart.spec.ts","",""
