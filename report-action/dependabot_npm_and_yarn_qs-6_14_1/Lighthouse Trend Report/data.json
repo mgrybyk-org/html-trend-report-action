@@ -1,0 +1,65 @@
+{
+  "data": [
+    {
+      "name": "_AVERAGE_",
+      "labels": [
+        "accessibility"
+      ],
+      "lines": 1,
+      "records": [
+        {
+          "meta": {
+            "sha": "1c4b87bc5d8e5d74b9e061a45abdb1554fbd4098"
+          },
+          "data": [
+            {
+              "x": 1767296024122,
+              "y": 94.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chart",
+      "labels": [
+        "accessibility"
+      ],
+      "lines": 1,
+      "records": [
+        {
+          "meta": {
+            "sha": "1c4b87bc5d8e5d74b9e061a45abdb1554fbd4098"
+          },
+          "data": [
+            {
+              "x": 1767296024122,
+              "y": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Folder Listing",
+      "labels": [
+        "accessibility"
+      ],
+      "lines": 1,
+      "records": [
+        {
+          "meta": {
+            "sha": "1c4b87bc5d8e5d74b9e061a45abdb1554fbd4098"
+          },
+          "data": [
+            {
+              "x": 1767296024122,
+              "y": 89
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "title": "Lighthouse Trend Report"
+}
