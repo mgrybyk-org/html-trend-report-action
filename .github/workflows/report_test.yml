@@ -26,7 +26,7 @@ jobs:
     steps:
       # To use this repository's private action,
       # you must check out the repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - run: npm ci --no-fund --no-audit --no-progress
       - run: npm run checks
@@ -46,7 +46,7 @@ jobs:
         run: npm run e2e -- --update-snapshots
       - name: git commit and push
         if: github.event_name == 'pull_request'
-        uses: mgrybyk-org/git-commit-pull-push-action@v1
+        uses: mgrybyk-org/git-commit-pull-push-action@v2
         with:
           branch: ${{ github.head_ref }}
           commit_message: Update screenshots
@@ -57,7 +57,7 @@ jobs:
         run: npm run e2e
 
       - name: Checkout gh-pages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         if: always()
         continue-on-error: true
         with:
@@ -65,7 +65,7 @@ jobs:
           path: gh-pages-dir # checkout path
 
       - name: Allure Report Action
-        uses: mgrybyk-org/allure-report-branch-js-action@v1
+        uses: mgrybyk-org/allure-report-branch-js-action@v2
         if: always()
         continue-on-error: true
         id: allure
@@ -121,7 +121,7 @@ jobs:
           max_reports: 9
 
       - name: Git Commit and Push Action
-        uses: mgrybyk-org/git-commit-pull-push-action@v1
+        uses: mgrybyk-org/git-commit-pull-push-action@v2
         if: always()
         with:
           repository: gh-pages-dir
@@ -131,11 +131,11 @@ jobs:
       - name: Comment PR with Allure Report link
         if: ${{ always() && github.event_name == 'pull_request' && (steps.allure.outputs.report_url || steps.html-1.outputs.report_url || steps.chart-2.outputs.report_url) }}
         continue-on-error: true
-        uses: thollander/actions-comment-pull-request@v2
+        uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
             [HTML Report](${{ steps.html-1.outputs.report_url }}) | [Allure Trend (single csv)](${{ steps.chart-2.outputs.report_url }})
             [Lighthouse Trend Report (mutliple csv)](${{ steps.chart-3.outputs.report_url }})
             ${{ steps.allure.outputs.test_result_icon }} [Allure Report](${{ steps.allure.outputs.report_url }}) | ${{ steps.allure.outputs.test_result_passed }}/${{ steps.allure.outputs.test_result_failed }}/${{ steps.allure.outputs.test_result_total }} | [History](${{ steps.allure.outputs.report_history_url }})
-          comment_tag: test_reports
+          comment-tag: test_reports
           mode: recreate

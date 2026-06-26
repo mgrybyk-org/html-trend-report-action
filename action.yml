@@ -47,5 +47,5 @@ outputs:
   report_path:
     description: 'Path to the folder containing the report relative to the repo root'
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'

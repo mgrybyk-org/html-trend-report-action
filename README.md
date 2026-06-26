@@ -1,6 +1,6 @@
 # html-trend-report-action
 
-Publish html trend reports per branch (type: `node20`)
+Publish html trend reports per branch (type: `node24`)
 
 Implementation of Jenkins [Plot](https://plugins.jenkins.io/plot/) and [HTML Publisher](https://plugins.jenkins.io/htmlpublisher/).
 
@@ -28,7 +28,7 @@ permissions:
 
 steps:
   - name: Checkout gh-pages
-    uses: actions/checkout@v3
+    uses: actions/checkout@v5
     if: always()
     continue-on-error: true
     with:
@@ -37,7 +37,7 @@ steps:
 
   - name: HTML Report
     if: always()
-    uses: mgrybyk-org/html-trend-report-action@v1
+    uses: mgrybyk-org/html-trend-report-action@v2
     id: html-report # used in comment to PR
     with:
       report_id: 'Jacoco Report'
@@ -46,7 +46,7 @@ steps:
 
   - name: Chart Report (single csv)
     if: ${{ always() }}
-    uses: mgrybyk-org/html-trend-report-action@v1
+    uses: mgrybyk-org/html-trend-report-action@v2
     id: chart-report # used in comment to PR
     with:
       report_id: 'Trend Report'
@@ -57,7 +57,7 @@ steps:
 
   - name: Chart Report (multiple csv)
     if: ${{ always() }}
-    uses: mgrybyk-org/html-trend-report-action@v1
+    uses: mgrybyk-org/html-trend-report-action@v2
     id: chart-report # used in comment to PR
     with:
       report_id: 'Trend Report'
@@ -66,7 +66,7 @@ steps:
       report_type: csv
 
   - name: Git Commit and Push Action
-    uses: mgrybyk-org/git-commit-pull-push-action@v1
+    uses: mgrybyk-org/git-commit-pull-push-action@v2
     if: always()
     with:
       repository: gh-pages-dir
@@ -88,11 +88,11 @@ steps:
   - name: Comment PR with Allure Report link
     if: ${{ always() && github.event_name == 'pull_request' && (steps.allure.outputs.report_url || steps.html-1.outputs.report_url || steps.chart-2.outputs.report_url) }}
     continue-on-error: true
-    uses: thollander/actions-comment-pull-request@v2
+    uses: thollander/actions-comment-pull-request@v3
     with:
       message: |
         [Report](${{ steps.html-report.outputs.report_url }})
-      comment_tag: test_reports
+      comment-tag: test_reports
       mode: recreate
 ```
 
